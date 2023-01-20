@@ -8,10 +8,10 @@ set(LIBRARY_OUTPUT_DIRECTORY ./lib)
 
 set(TINYBLOG_SRC ./tinyblog.c )
 set(OUTPUT_BIN tinyblog)
-include_directories(./libhv/build/include/hv)
+include_directories(./libhv/build/include/hv ./sundown/src ./sundown/html)
 
-link_directories(./libhv/build/lib)
+link_directories(./libhv/build/lib ./sundown)
 
 add_executable(${OUTPUT_BIN} ${TINYBLOG_SRC})
 
-target_link_libraries(${OUTPUT_BIN} hv)
+target_link_libraries(${OUTPUT_BIN} hv sundown)
