@@ -492,13 +492,6 @@ int main(int argc, char** argv) {
     }
     if (thread_num == 0) thread_num = 1;
 
-    // create_dir("static");
-    // int lenght = 0;
-    // char* content = NULL;
-    // content = articles_html("articles",&lenght);
-    // printf("%s\n",content);
-    // create_static_html("static/article.html",content,lenght);
-
     worker_loops = (hloop_t**)malloc(sizeof(hloop_t*) * thread_num);
     for (int i = 0; i < thread_num; ++i) {
         worker_loops[i] = hloop_new(HLOOP_FLAG_AUTO_FREE);
