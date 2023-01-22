@@ -16,6 +16,9 @@
 #include "hv.h"
 #include "hloop.h"
 
+#include "create_html.h"
+#include "utils.h"
+
 /*
  * workflow:
  * hloop_new -> hloop_create_tcp_server -> hloop_run ->
@@ -255,9 +258,35 @@ static int on_request(http_conn_t* conn) {
     if (strcmp(req->method, "GET") == 0) {
         // GET /ping HTTP/1.1\r\n
         if (strcmp(req->path, "/ping") == 0) {
-            http_reply(conn, 200, "OK", TEXT_PLAIN, "pong", 4);
+            char* content;
+            int length;
+            content = pmd("README.md",&length);
+            http_reply(conn, 200, "OK", TEXT_HTML, content, length);
+            free(content);
             return 200;
-        } else {
+        }
+        else if(strcmp(req->path,"/article") == 0){
+            char* content;
+            int length;
+            printf("seems enter\n");
+            content = articles_html("articles",&length);
+            http_reply(conn, 200, "OK", TEXT_HTML, content, length);
+            free(content);
+            printf("seems ok\n");
+            return 200;
+        } else if(strncmp(req->path,"/articles",9) == 0){
+            char* content;
+            int length;
+            char temp_path[256] = ".";
+            strcat(temp_path,req->path);
+            strcat(temp_path,".md");
+            content = pmd(temp_path,&length);
+            http_reply(conn, 200, "OK", TEXT_HTML, content, length);
+            free(content);
+            return 200;
+        }
+        else {
+            
             // TODO: Add handler for your path
         }
         return http_serve_file(conn);
@@ -462,6 +491,13 @@ int main(int argc, char** argv) {
         thread_num = get_ncpu();
     }
     if (thread_num == 0) thread_num = 1;
+
+    // create_dir("static");
+    // int lenght = 0;
+    // char* content = NULL;
+    // content = articles_html("articles",&lenght);
+    // printf("%s\n",content);
+    // create_static_html("static/article.html",content,lenght);
 
     worker_loops = (hloop_t**)malloc(sizeof(hloop_t*) * thread_num);
     for (int i = 0; i < thread_num; ++i) {

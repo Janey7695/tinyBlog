@@ -5,8 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/libhv/build/include/hv/",
-                "${workspaceFolder}/sundown/src/",
-                "${workspaceFolder}/sundown/html/"
+                "${workspaceFolder}/moonrise/src/",
+                "${workspaceFolder}/moonrise/html/"
 
             ],
             "defines": [],
