@@ -18,7 +18,7 @@
 
 #include "create_html.h"
 #include "utils.h"
-
+#include <locale.h>
 /*
  * workflow:
  * hloop_new -> hloop_create_tcp_server -> hloop_run ->
@@ -268,11 +268,9 @@ static int on_request(http_conn_t* conn) {
         else if(strcmp(req->path,"/article") == 0){
             char* content;
             int length;
-            printf("seems enter\n");
             content = articles_html("articles",&length);
             http_reply(conn, 200, "OK", TEXT_HTML, content, length);
             free(content);
-            printf("seems ok\n");
             return 200;
         } else if(strncmp(req->path,"/articles",9) == 0){
             char* content;
@@ -491,7 +489,7 @@ int main(int argc, char** argv) {
         thread_num = get_ncpu();
     }
     if (thread_num == 0) thread_num = 1;
-
+    setlocale(LC_ALL,"en_US.UTF-8");
     worker_loops = (hloop_t**)malloc(sizeof(hloop_t*) * thread_num);
     for (int i = 0; i < thread_num; ++i) {
         worker_loops[i] = hloop_new(HLOOP_FLAG_AUTO_FREE);

@@ -4,3 +4,6 @@
 [submodule "moonrise"]
 	path = moonrise
 	url = https://github.com/Janey7695/moonrise.git
+[submodule "cjson"]
+	path = cjson
+	url = https://github.com/DaveGamble/cJSON.git
