@@ -16,7 +16,7 @@
             "program": "${workspaceFolder}/build/bin/tinyblog",
             "args": ["8000"],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/build/bin",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
