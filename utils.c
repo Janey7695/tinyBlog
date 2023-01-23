@@ -5,7 +5,7 @@
 /// @return 返回mkd_files指针 若初始化失败则返回NULL
 mkd_files *init_mkdroot()
 {
-    mkd_files *mkdroot = (mkd_files*)malloc(sizeof(struct markdown_files));
+    mkd_files *mkdroot = (mkd_files *)malloc(sizeof(struct markdown_files));
     if (mkdroot == NULL)
     {
         printf("create mkdroot faild.\n");
@@ -17,12 +17,12 @@ mkd_files *init_mkdroot()
     return mkdroot;
 }
 
-char *remove_suffix(char *strings,int stringLength)
+char *remove_suffix(char *strings, int stringLength)
 {
     if (strings == NULL)
         return NULL;
     char *temp = NULL;
-    temp = (char*)malloc((stringLength + 1) * sizeof(char));
+    temp = (char *)malloc((stringLength + 1) * sizeof(char));
     int i = 0;
     while (strings[i] != '.')
     {
@@ -36,10 +36,10 @@ char *remove_suffix(char *strings,int stringLength)
 /// @brief 创建一个新的mkdfile节点，并填充数据
 /// @param filename 文件名称
 /// @return 返回指向该节点的指针
-mkd_file *create_new_mkd_file(const char *dirpath, const char *filename,int filenameLength)
+mkd_file *create_new_mkd_file(const char *dirpath, const char *filename, int filenameLength)
 {
     mkd_file *temp_mkd = NULL;
-    temp_mkd = (mkd_file*)malloc(sizeof(struct markdown_file));
+    temp_mkd = (mkd_file *)malloc(sizeof(struct markdown_file));
     char temp_path[256];
     FILE *fp;
     int fd;
@@ -51,10 +51,10 @@ mkd_file *create_new_mkd_file(const char *dirpath, const char *filename,int file
         return temp_mkd;
     }
 
-    temp_mkd->filename = (char*)malloc(sizeof(char) * (filenameLength + 1));
+    temp_mkd->filename = (char *)malloc(sizeof(char) * (filenameLength + 1));
     strcpy(temp_mkd->filename, filename);
     temp_mkd->filename[filenameLength] = '\0';
-    temp_mkd->filename_without_suffix = remove_suffix(filename,filenameLength);
+    temp_mkd->filename_without_suffix = remove_suffix(filename, filenameLength);
     sprintf(temp_path, "%s/%s", dirpath, filename);
 
     fp = fopen(temp_path, "r");
@@ -111,7 +111,7 @@ void free_mkds(mkd_files *mkdroot)
     mkd_file *t2;
     t1 = mkdroot->head;
     if (t1->next != NULL)
-            t2 = mkdroot->head->next;
+        t2 = mkdroot->head->next;
     else
         t2 = NULL;
     while (t1)
@@ -170,17 +170,17 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
         {
             continue;
         }
-            
+
         else if (ptr->d_type == 8) /// file
         {
             total_file_number++;
-            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name,ptr->d_reclen));
+            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name, ptr->d_reclen));
         }
 
         else if (ptr->d_type == 10) /// link file
         {
             total_file_number++;
-            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name,ptr->d_reclen));
+            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name, ptr->d_reclen));
         }
         else if (ptr->d_type == 4) /// dir
         {
@@ -195,4 +195,64 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
     }
     closedir(dir);
     return total_file_number;
+}
+
+/// @brief 读取配置文件
+/// @param config_file_path  配置文件所在位置
+/// @return 配置结构体的指针
+configures *read_configure_json(const char *config_file_path)
+{
+    configures *temp_configure;
+    cJSON *temp_json;
+    cJSON *obj_json;
+    char *json_string;
+    FILE *fp;
+    fp = fopen(config_file_path, "r");
+    if (fp == NULL)
+    {
+        printf("can't open configure file %s\n", config_file_path);
+        perror("open configure file : ");
+        exit(1);
+    }
+    fseek(fp, 0, SEEK_END);
+    int filesize = 0;
+    filesize = ftell(fp);
+    json_string = (char *)malloc(sizeof(char) * (filesize + 1));
+    rewind(fp);
+    fread(json_string, filesize, sizeof(char), fp);
+    fclose(fp);
+    json_string[filesize] = '\0';
+    printf("start to read configure file : %s\n",json_string);
+    temp_json = cJSON_Parse(json_string);
+    if (temp_json == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+        {
+            fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+        exit(1);
+    }
+    free(json_string);
+    char *temp_printstring = cJSON_Print(temp_json);
+    printf("%s\n", temp_printstring);
+    temp_configure = malloc(sizeof(configures));
+    if(temp_configure == NULL){
+        printf("configures alloc faild.\n");
+        cJSON_Delete(temp_json);
+        exit(1);
+    }
+    obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"port");
+    temp_configure->port = (int)cJSON_GetNumberValue(obj_json);
+    int path_length = 0;
+    obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"mkd_path");
+    path_length = strlen(cJSON_GetStringValue(obj_json));
+    temp_configure->markdown_floder = (char*)malloc(sizeof(char)* (path_length+1));
+    strcpy(temp_configure->markdown_floder,cJSON_GetStringValue(obj_json));
+    cJSON_Delete(temp_json);
+    return temp_configure;
+}
+
+void print_configure(configures *configure){
+    printf("Port : %d \r\n markdown file store path : %s \r\n",configure->port,configure->markdown_floder);
 }

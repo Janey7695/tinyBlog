@@ -29,7 +29,7 @@
  * on_close -> HV_FREE(http_conn_t)
  *
  */
-
+configures* configure;
 static const char* host = "0.0.0.0";
 static int port = 8000;
 static int thread_num = 1;
@@ -268,16 +268,20 @@ static int on_request(http_conn_t* conn) {
         else if(strcmp(req->path,"/article") == 0){
             char* content;
             int length;
-            content = articles_html("articles",&length);
+            content = articles_html(configure->markdown_floder,&length);
             http_reply(conn, 200, "OK", TEXT_HTML, content, length);
             free(content);
             return 200;
         } else if(strncmp(req->path,"/articles",9) == 0){
             char* content;
             int length;
-            char temp_path[256] = ".";
-            strcat(temp_path,req->path);
-            strcat(temp_path,".md");
+            char temp_path[256] = "";
+            memset(temp_path,0x0,256);
+            sprintf(temp_path,"%s/%s.md",configure->markdown_floder,req->path+9);
+            printf("file path is : %s\n",temp_path);
+            // strcpy(temp_path,configure->markdown_floder);
+            // strcat(temp_path,req->path);
+            // strcat(temp_path,".md");
             content = pmd(temp_path,&length);
             http_reply(conn, 200, "OK", TEXT_HTML, content, length);
             free(content);
@@ -478,16 +482,20 @@ static HTHREAD_ROUTINE(accept_thread) {
 }
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
-        printf("Usage: %s port [thread_num]\n", argv[0]);
+    if (argc < 3) {
+        printf("Usage: %s -c <configure file path>\n", argv[0]);
         return -10;
     }
-    port = atoi(argv[1]);
-    if (argc > 2) {
-        thread_num = atoi(argv[2]);
-    } else {
-        thread_num = get_ncpu();
-    }
+    configure = read_configure_json(argv[2]);
+    print_configure(configure);
+    port = configure->port;
+    // port = atoi(argv[1]);
+    // if (argc > 2) {
+    //     thread_num = atoi(argv[2]);
+    // } else {
+    //     thread_num = get_ncpu();
+    // }
+    thread_num = get_ncpu();
     if (thread_num == 0) thread_num = 1;
     setlocale(LC_ALL,"en_US.UTF-8");
     worker_loops = (hloop_t**)malloc(sizeof(hloop_t*) * thread_num);

@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/libhv/build/include/hv/",
                 "${workspaceFolder}/moonrise/src/",
-                "${workspaceFolder}/moonrise/html/"
+                "${workspaceFolder}/moonrise/html/",
+                "&{workspaceFolder}/cjson"
 
             ],
             "defines": [],

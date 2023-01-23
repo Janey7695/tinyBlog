@@ -26,11 +26,11 @@ cmake ..
 cmake --build .
 ```
 # Usage
-可执行的二进制文件在`tinyblog/build/bin`中,将`tinyblog/test-file`中的`index.html`和`style.css`文件放到`可执行文件同目录下`
+可执行的二进制文件在`tinyblog/build/bin`中,将`tinyblog/templates`中的`index.html`,`style.css`以及`configure.json`文件放到`可执行文件同目录下`
 
-用法：`tinyblog <port>`,如
+用法：`tinyblog -c <configure json file path>`,如
 ```
-./tinyblog 8000
+./tinyblog -c configure.json
 ```
 浏览器访问:`localhost:8000`即可看到非常简陋的主页
 

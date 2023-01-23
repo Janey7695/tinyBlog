@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "cJSON.h"
+
 typedef struct 
 {
     int year;
@@ -20,6 +22,13 @@ typedef struct
     int hour;
     int min;
 }timestamp;
+
+typedef struct
+{
+    int port;
+    char* markdown_floder;
+    
+}configures;
 
 
 typedef struct markdown_file
@@ -41,5 +50,6 @@ mkd_files* init_mkdroot();
 int get_mkd_files_name(const char *dirpath, mkd_files* mkds);
 void free_mkds(mkd_files* mkdroot);
 int create_dir(const char *dirpath);
-
+configures *read_configure_json(const char *config_file_path);
+void print_configure(configures *configure);
 #endif
