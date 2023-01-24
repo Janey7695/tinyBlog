@@ -279,10 +279,8 @@ static int on_request(http_conn_t* conn) {
             memset(temp_path,0x0,256);
             urldecode(req->path+9);
             sprintf(temp_path,"%s/%s.md",configure->markdown_floder,req->path+9);
-            printf("file path is : %s\n",temp_path);
-            // strcpy(temp_path,configure->markdown_floder);
-            // strcat(temp_path,req->path);
-            // strcat(temp_path,".md");
+            LOG_NORMAL("target file path is : %s",temp_path)
+            // printf("file path is : %s\n",temp_path);
             content = pmd(temp_path,&length);
             http_reply(conn, 200, "OK", TEXT_HTML, content, length);
             free(content);
@@ -474,8 +472,11 @@ static HTHREAD_ROUTINE(accept_thread) {
     if (listenio == NULL) {
         exit(1);
     }
-    printf("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
-            host, port, hio_fd(listenio), thread_num);
+    LOG_SUCCESS("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
+            host, port, hio_fd(listenio), thread_num)
+    // printf("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
+    //         host, port, hio_fd(listenio), thread_num);
+
     // NOTE: add timer to update date every 1s
     htimer_add(loop, update_date, 1000, INFINITE);
     hloop_run(loop);

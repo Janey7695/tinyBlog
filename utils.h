@@ -8,12 +8,23 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include "cJSON.h"
 
+#define COLOR_RED_NUM       31
+#define COLOR_GREEN_NUM     32
+#define COLOR_YELLOW_NUM    33
+#define COLOR_NORMAL_NUM    0
+
+#define LOG_PLAIN(color,level,message,...)    {char tss[80]="";get_current_timestamp(tss);printf("%s - \033[%dm [%s] \033[0m : ",tss,color,level);printf(message,##__VA_ARGS__);printf("\r\n");}
+#define LOG_WARN(message,...)        LOG_PLAIN(COLOR_YELLOW_NUM,"warning",message,##__VA_ARGS__)
+#define LOG_ERROR(message,...)        LOG_PLAIN(COLOR_RED_NUM,"error",message,##__VA_ARGS__)
+#define LOG_NORMAL(message,...)        LOG_PLAIN(COLOR_NORMAL_NUM,"log",message,##__VA_ARGS__)
+#define LOG_SUCCESS(message,...)        LOG_PLAIN(COLOR_GREEN_NUM,"ok",message,##__VA_ARGS__)
 
 typedef struct 
 {
@@ -54,4 +65,5 @@ int create_dir(const char *dirpath);
 configures *read_configure_json(const char *config_file_path);
 void print_configure(configures *configure);
 void urldecode(char url[]);
+void get_current_timestamp(char* tss);
 #endif

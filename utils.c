@@ -8,7 +8,8 @@ mkd_files *init_mkdroot()
     mkd_files *mkdroot = (mkd_files *)malloc(sizeof(struct markdown_files));
     if (mkdroot == NULL)
     {
-        printf("create mkdroot faild.\n");
+        LOG_ERROR("alloc mem faild in %s",__LINE__)
+        // printf("create mkdroot faild.\n");
         exit(1);
     }
     mkdroot->head = NULL;
@@ -51,7 +52,7 @@ mkd_file *create_new_mkd_file(const char *dirpath, const char *filename, int fil
 
     if (temp_mkd == NULL)
     {
-        printf("create mkd node faild.\n");
+        LOG_WARN("alloc mem faild in %s",__LINE__)
         return temp_mkd;
     }
 
@@ -72,7 +73,8 @@ mkd_file *create_new_mkd_file(const char *dirpath, const char *filename, int fil
     }
     else
     {
-        printf("open file to get time faild.\n");
+        LOG_WARN("open file to get time faild.",__LINE__)
+        // printf("open file to get time faild.\n");
         temp_mkd->modify_time = 0;
     }
 
@@ -137,11 +139,13 @@ int create_dir(const char *dirpath)
     {
         if (mkdir(dirpath, 0755) == -1)
         {
-            printf("mkdir %s error!\n", dirpath);
+            LOG_ERROR("mkdir %s error!",dirpath)
+            // printf("mkdir %s error!\n", dirpath);
             return -1;
         }
     }
-    printf("create dir\n");
+    LOG_SUCCESS("mkdir %s successed!")
+    // printf("create dir\n");
     return 0;
 }
 
@@ -157,7 +161,8 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
 
     if ((dir = opendir(dirpath)) == NULL)
     {
-        printf("target markdown file dir don't exist\n try to create it.\n");
+        LOG_WARN("target markdown file dir don't exist\n try to create it.")
+        // printf("target markdown file dir don't exist\n try to create it.\n");
         if (create_dir(dirpath) != 0)
         {
             exit(1);
@@ -193,7 +198,6 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
             // strcat(base, "/");
             // strcat(base, ptr->d_name);
             // readFileList(base);
-            printf("seems 3\n");
             continue;
         }
     }
@@ -212,7 +216,8 @@ int get_configure_mkdpath(configures* configure,cJSON* configure_json){
     cJSON* pj;
     pj = cJSON_GetObjectItemCaseSensitive(configure_json,"mkd_path");
     if(pj == NULL){
-        printf("don't find configure %s in the json file.\n","mkd_path");
+        LOG_WARN("don't find configure %s in the json file.\n","mkd_path")
+        // printf("don't find configure %s in the json file.\n","mkd_path");
         return 1;
     }
     int path_length = 0;
@@ -226,7 +231,8 @@ int get_configure_port(configures* configure,cJSON* configure_json){
     cJSON* pj;
     pj = cJSON_GetObjectItemCaseSensitive(configure_json,"port");
     if(pj == NULL){
-        printf("don't find configure %s in the json file.\n","port");
+        LOG_WARN("don't find configure %s in the json file.\n","port")
+
         return 1;
     }
     configure->port = (int)cJSON_GetNumberValue(pj);
@@ -252,7 +258,8 @@ configures *read_configure_json(const char *config_file_path)
     fp = fopen(config_file_path, "r");
     if (fp == NULL)
     {
-        printf("can't open configure file %s\n", config_file_path);
+        LOG_ERROR("can't open configure file %s\n", config_file_path)
+        // printf("can't open configure file %s\n", config_file_path);
         perror("open configure file : ");
         exit(1);
     }
@@ -266,7 +273,8 @@ configures *read_configure_json(const char *config_file_path)
     fread(json_string, filesize, sizeof(char), fp);
     json_string[filesize] = '\0';
     fclose(fp);
-    printf("read configure file : %s\n",json_string);
+    LOG_NORMAL("read configure file : %s\n",json_string)
+    // printf("read configure file : %s\n",json_string);
 
     temp_json = cJSON_Parse(json_string);
     if (temp_json == NULL)
@@ -297,7 +305,8 @@ configures *read_configure_json(const char *config_file_path)
 }
 
 void print_configure(configures *configure){
-    printf("Port : %d \r\n markdown file store path : %s \r\n",configure->port,configure->markdown_floder);
+    LOG_NORMAL("Port : %d \r\n markdown file store path : %s \r\n",configure->port,configure->markdown_floder)
+    //printf("Port : %d \r\n markdown file store path : %s \r\n",configure->port,configure->markdown_floder);
 }
 
 int hex2dec(char c)
@@ -344,4 +353,12 @@ void urldecode(char url[])
     }
     res[res_len] = '\0';
     strcpy(url, res);
+}
+
+void get_current_timestamp(char* tss){
+    time_t timep;
+	time(&timep);
+	struct tm *p;
+	p = gmtime(&timep);
+    sprintf(tss,"%d/%d/%d-%d:%d:%d",p->tm_year - 100,1+p->tm_mon,p->tm_mday,8+p->tm_hour,p->tm_min,p->tm_sec);
 }
