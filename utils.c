@@ -229,6 +229,11 @@ int get_configure_port(configures* configure,cJSON* configure_json){
     return 0;
 }
 
+int get_configure(configures* configure,cJSON* configure_json){
+    get_configure_mkdpath(configure,configure_json);
+    get_configure_port(configure,configure_json);
+}
+
 /// @brief 读取配置文件
 /// @param config_file_path  配置文件所在位置
 /// @return 配置结构体的指针
@@ -278,19 +283,12 @@ configures *read_configure_json(const char *config_file_path)
         cJSON_Delete(temp_json);
         exit(1);
     }
-    init_configure(temp_configure);
 
-    // obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"port");
-    // temp_configure->port = (int)cJSON_GetNumberValue(obj_json);
-    get_configure_port(temp_configure,temp_json);
-    get_configure_mkdpath(temp_configure,temp_json);
-    // int path_length = 0;
-    // obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"mkd_path");
-    // path_length = strlen(cJSON_GetStringValue(obj_json));
-    // temp_configure->markdown_floder = (char*)malloc(sizeof(char)* (path_length+1));
-    // strcpy(temp_configure->markdown_floder,cJSON_GetStringValue(obj_json));
+    init_configure(temp_configure);
+    get_configure(temp_configure,temp_json);
 
     cJSON_Delete(temp_json);
+
     return temp_configure;
 }
 

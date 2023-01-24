@@ -491,6 +491,7 @@ int main(int argc, char** argv) {
     port = configure->port;
     thread_num = get_ncpu();
     if (thread_num == 0) thread_num = 1;
+    
     setlocale(LC_ALL,"en_US.UTF-8");
     worker_loops = (hloop_t**)malloc(sizeof(hloop_t*) * thread_num);
     for (int i = 0; i < thread_num; ++i) {
