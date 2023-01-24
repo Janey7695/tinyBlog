@@ -489,12 +489,6 @@ int main(int argc, char** argv) {
     configure = read_configure_json(argv[2]);
     print_configure(configure);
     port = configure->port;
-    // port = atoi(argv[1]);
-    // if (argc > 2) {
-    //     thread_num = atoi(argv[2]);
-    // } else {
-    //     thread_num = get_ncpu();
-    // }
     thread_num = get_ncpu();
     if (thread_num == 0) thread_num = 1;
     setlocale(LC_ALL,"en_US.UTF-8");

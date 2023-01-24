@@ -197,6 +197,38 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
     return total_file_number;
 }
 
+/// @brief 初始化configure
+/// @param configure 
+void init_configure(configures* configure){
+    configure->markdown_floder = "articles";
+    configure->port = 8000;
+}
+
+int get_configure_mkdpath(configures* configure,cJSON* configure_json){
+    cJSON* pj;
+    pj = cJSON_GetObjectItemCaseSensitive(configure_json,"mkd_path");
+    if(pj == NULL){
+        printf("don't find configure %s in the json file.\n","mkd_path");
+        return 1;
+    }
+    int path_length = 0;
+    path_length = strlen(cJSON_GetStringValue(pj));
+    configure->markdown_floder = (char*)malloc(sizeof(char)* (path_length+1));
+    strcpy(configure->markdown_floder,cJSON_GetStringValue(pj));
+    return 0;
+}
+
+int get_configure_port(configures* configure,cJSON* configure_json){
+    cJSON* pj;
+    pj = cJSON_GetObjectItemCaseSensitive(configure_json,"port");
+    if(pj == NULL){
+        printf("don't find configure %s in the json file.\n","port");
+        return 1;
+    }
+    configure->port = (int)cJSON_GetNumberValue(pj);
+    return 0;
+}
+
 /// @brief 读取配置文件
 /// @param config_file_path  配置文件所在位置
 /// @return 配置结构体的指针
@@ -207,6 +239,7 @@ configures *read_configure_json(const char *config_file_path)
     cJSON *obj_json;
     char *json_string;
     FILE *fp;
+
     fp = fopen(config_file_path, "r");
     if (fp == NULL)
     {
@@ -214,15 +247,18 @@ configures *read_configure_json(const char *config_file_path)
         perror("open configure file : ");
         exit(1);
     }
+
     fseek(fp, 0, SEEK_END);
     int filesize = 0;
     filesize = ftell(fp);
     json_string = (char *)malloc(sizeof(char) * (filesize + 1));
+
     rewind(fp);
     fread(json_string, filesize, sizeof(char), fp);
-    fclose(fp);
     json_string[filesize] = '\0';
-    printf("start to read configure file : %s\n",json_string);
+    fclose(fp);
+    printf("read configure file : %s\n",json_string);
+
     temp_json = cJSON_Parse(json_string);
     if (temp_json == NULL)
     {
@@ -231,24 +267,29 @@ configures *read_configure_json(const char *config_file_path)
         {
             fprintf(stderr, "Error before: %s\n", error_ptr);
         }
+        free(json_string);
         exit(1);
     }
     free(json_string);
-    char *temp_printstring = cJSON_Print(temp_json);
-    printf("%s\n", temp_printstring);
+
     temp_configure = malloc(sizeof(configures));
     if(temp_configure == NULL){
         printf("configures alloc faild.\n");
         cJSON_Delete(temp_json);
         exit(1);
     }
-    obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"port");
-    temp_configure->port = (int)cJSON_GetNumberValue(obj_json);
-    int path_length = 0;
-    obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"mkd_path");
-    path_length = strlen(cJSON_GetStringValue(obj_json));
-    temp_configure->markdown_floder = (char*)malloc(sizeof(char)* (path_length+1));
-    strcpy(temp_configure->markdown_floder,cJSON_GetStringValue(obj_json));
+    init_configure(temp_configure);
+
+    // obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"port");
+    // temp_configure->port = (int)cJSON_GetNumberValue(obj_json);
+    get_configure_port(temp_configure,temp_json);
+    get_configure_mkdpath(temp_configure,temp_json);
+    // int path_length = 0;
+    // obj_json = cJSON_GetObjectItemCaseSensitive(temp_json,"mkd_path");
+    // path_length = strlen(cJSON_GetStringValue(obj_json));
+    // temp_configure->markdown_floder = (char*)malloc(sizeof(char)* (path_length+1));
+    // strcpy(temp_configure->markdown_floder,cJSON_GetStringValue(obj_json));
+
     cJSON_Delete(temp_json);
     return temp_configure;
 }
