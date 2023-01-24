@@ -1,6 +1,6 @@
 #include "create_html.h"
 #include "utils.h"
-
+#include <locale.h>
 #define HTML_MD_BEGIN "<html><head><meta charset=\"UTF-8\"></head><body><link rel=\"stylesheet\" href=\"../style.css\">"
 #define HTML_MD_END "</body></html>"
 #define HTML_EXCEPTMD_LENGTH (sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]) + sizeof(HTML_MD_END) / sizeof(HTML_MD_END[0]) - 2)
@@ -21,15 +21,15 @@ char *pmd(const char *filepath, int *length)
     struct sd_markdown *markdown;
 
     char *content = NULL;
-
+    char *old_locale = NULL;
     /* opening the file if given from the command line */
+    printf("will open:%s \n",filepath);
     in = fopen(filepath, "r");
     if (!in)
     {
         fprintf(stderr, "Unable to open input file \"%s\": %s\n", filepath, strerror(errno));
         return NULL;
     }
-
     /* reading everything */
     ib = bufnew(READ_UNIT);
     bufgrow(ib, READ_UNIT);

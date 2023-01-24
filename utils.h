@@ -14,6 +14,7 @@
 
 #include "cJSON.h"
 
+
 typedef struct 
 {
     int year;
@@ -52,4 +53,5 @@ void free_mkds(mkd_files* mkdroot);
 int create_dir(const char *dirpath);
 configures *read_configure_json(const char *config_file_path);
 void print_configure(configures *configure);
+void urldecode(char url[]);
 #endif
