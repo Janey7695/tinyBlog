@@ -1,6 +1,7 @@
 #include "create_html.h"
 #include "utils.h"
 #include <locale.h>
+
 #define HTML_MD_BEGIN "<html><head><meta charset=\"UTF-8\"></head><body><link rel=\"stylesheet\" href=\"../style.css\">"
 #define HTML_MD_END "</body></html>"
 #define HTML_EXCEPTMD_LENGTH (sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]) + sizeof(HTML_MD_END) / sizeof(HTML_MD_END[0]) - 2)
@@ -23,7 +24,8 @@ char *pmd(const char *filepath, int *length)
     char *content = NULL;
     char *old_locale = NULL;
     /* opening the file if given from the command line */
-    printf("will open:%s \n",filepath);
+    LOG_NORMAL("will open : %s.",filepath)
+    //printf("will open:%s \n",filepath);
     in = fopen(filepath, "r");
     if (!in)
     {
@@ -52,13 +54,15 @@ char *pmd(const char *filepath, int *length)
     content = (char *)malloc(sizeof(char) * (ob->size + HTML_EXCEPTMD_LENGTH + 1));
     if (content != NULL)
     {
-        printf("alloc mem succ\n");
+        LOG_SUCCESS("alloc mem for markdown2html buffer succed.")
+        //printf("alloc mem succ\n");
     }
     else
     {
         free(content);
         bufrelease(ib);
         bufrelease(ob);
+        LOG_WARN("alloc mem for markdown2html buffer faild.")
         return NULL;
     }
     // printf("%s%s%s",HTML_MD_BEGIN,ob->data,HTML_MD_END);
@@ -70,7 +74,7 @@ char *pmd(const char *filepath, int *length)
     sd_markdown_free(markdown);
     bufrelease(ib);
     bufrelease(ob);
-    printf("ok,length is %d \n", *length);
+    LOG_NORMAL("read %d bytes to the buffer.", *length);
     return content;
 }
 
@@ -107,23 +111,23 @@ char *articles_html(const char *mkd_floder_path,int* length)
     {
         filename_total_length += strlen(mkd->filename_without_suffix);
         mkd = mkd->next;
-        printf("seems count\n");
+        //printf("seems count\n");
     }
 
     mkd = mkds->head;
     content = (char*)malloc(sizeof(char) * (HTML_a_TAG_EXCEPT_LENGTH*files_number1 + HTML_EXCEPTMD_LENGTH + filename_total_length * 2 + 10));
     offset = sprintf(content, "%s", HTML_MD_BEGIN);
-    printf("%d :: %d",offset,sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]));
+    //printf("%d :: %d",offset,sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]));
     while (mkd)
     {
         offset += sprintf(content + offset, "%s%s%s%s%s", HTML_a_TAG_BEGIN, mkd->filename_without_suffix, HTML_a_TAG_MIDDLE,mkd->filename_without_suffix,HTML_a_TAG_END);
-        printf("%s\n",mkd->filename_without_suffix);
+        //printf("%s\n",mkd->filename_without_suffix);
         mkd = mkd->next;
     }
     offset += sprintf(content + offset,"%s",HTML_MD_END);
     content[offset] = '\0';
     *length = offset;
-    printf("offset=%d while alloc length=%d\n",offset,HTML_a_TAG_EXCEPT_LENGTH*files_number1 + HTML_EXCEPTMD_LENGTH + filename_total_length * 2 + 10);
+    LOG_NORMAL("offset=%d while alloc length=%d\n",offset,HTML_a_TAG_EXCEPT_LENGTH*files_number1 + HTML_EXCEPTMD_LENGTH + filename_total_length * 2 + 10);
     free_mkds(mkds);
     return content;
 }

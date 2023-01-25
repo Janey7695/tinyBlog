@@ -291,7 +291,8 @@ configures *read_configure_json(const char *config_file_path)
 
     temp_configure = malloc(sizeof(configures));
     if(temp_configure == NULL){
-        printf("configures alloc faild.\n");
+        LOG_WARN("configures alloc faild.\n")
+        //printf("configures alloc faild.\n");
         cJSON_Delete(temp_json);
         exit(1);
     }
