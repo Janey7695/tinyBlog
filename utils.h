@@ -26,18 +26,10 @@
 #define LOG_NORMAL(message,...)        LOG_PLAIN(COLOR_NORMAL_NUM,"log",message,##__VA_ARGS__)
 #define LOG_SUCCESS(message,...)        LOG_PLAIN(COLOR_GREEN_NUM,"ok",message,##__VA_ARGS__)
 
-typedef struct 
-{
-    int year;
-    int mon;
-    int day;
-    int hour;
-    int min;
-}timestamp;
 
 typedef struct
 {
-    int port;
+    char* port;
     char* markdown_floder;
     
 }configures;

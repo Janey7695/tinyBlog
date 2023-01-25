@@ -51,7 +51,7 @@ char *pmd(const char *filepath, int *length)
     markdown = sd_markdown_new(MKDEXT_FENCED_CODE | MKDEXT_TABLES | MKDEXT_STRIKETHROUGH, 16, &callbacks, &options);
 
     sd_markdown_render(ob, ib->data, ib->size, markdown);
-    content = (char *)malloc(sizeof(char) * (ob->size + HTML_EXCEPTMD_LENGTH + 1));
+    content = (char *)malloc(sizeof(char) * (strlen(ob->data) + HTML_EXCEPTMD_LENGTH + 2));
     if (content != NULL)
     {
         LOG_SUCCESS("alloc mem for markdown2html buffer succed.")

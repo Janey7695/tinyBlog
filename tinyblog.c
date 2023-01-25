@@ -210,6 +210,7 @@ static int http_serve_file(http_conn_t* conn) {
     } else {
         // TODO: set content_type by suffix
     }
+    LOG_NORMAL("someone GET index.html")
     hio_setcb_write(conn->io, on_write);
     int nwrite = http_reply(conn, 200, "OK", content_type, NULL, 0);
     if (nwrite < 0) return nwrite; // disconnected
@@ -474,8 +475,6 @@ static HTHREAD_ROUTINE(accept_thread) {
     }
     LOG_SUCCESS("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
             host, port, hio_fd(listenio), thread_num)
-    // printf("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
-    //         host, port, hio_fd(listenio), thread_num);
 
     // NOTE: add timer to update date every 1s
     htimer_add(loop, update_date, 1000, INFINITE);
@@ -490,10 +489,10 @@ int main(int argc, char** argv) {
     }
     configure = read_configure_json(argv[2]);
     print_configure(configure);
-    port = configure->port;
+    port = atoi(configure->port);
     thread_num = get_ncpu();
     if (thread_num == 0) thread_num = 1;
-    
+
     setlocale(LC_ALL,"en_US.UTF-8");
     worker_loops = (hloop_t**)malloc(sizeof(hloop_t*) * thread_num);
     for (int i = 0; i < thread_num; ++i) {

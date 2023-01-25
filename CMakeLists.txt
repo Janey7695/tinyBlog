@@ -25,6 +25,6 @@ include_directories(./libhv/build/include/hv ./moonrise/src ./moonrise/html ./cj
 link_directories(./libhv/build/lib)
 
 add_executable(${OUTPUT_BIN} ${TINYBLOG_SRC})
-# add_executable(${OUTPUT_TEST_BIN} ${UTILSTEST_SRC})
+
 
 target_link_libraries(${OUTPUT_BIN} libhv_static.a pthread)

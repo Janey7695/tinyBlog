@@ -8,7 +8,7 @@ mkd_files *init_mkdroot()
     mkd_files *mkdroot = (mkd_files *)malloc(sizeof(struct markdown_files));
     if (mkdroot == NULL)
     {
-        LOG_ERROR("alloc mem faild in %s",__LINE__)
+        LOG_ERROR("alloc mem faild in %s",__func__)
         // printf("create mkdroot faild.\n");
         exit(1);
     }
@@ -52,7 +52,7 @@ mkd_file *create_new_mkd_file(const char *dirpath, const char *filename, int fil
 
     if (temp_mkd == NULL)
     {
-        LOG_WARN("alloc mem faild in %s",__LINE__)
+        LOG_WARN("alloc mem faild in %s",__func__)
         return temp_mkd;
     }
 
@@ -73,7 +73,7 @@ mkd_file *create_new_mkd_file(const char *dirpath, const char *filename, int fil
     }
     else
     {
-        LOG_WARN("open file to get time faild.",__LINE__)
+        LOG_WARN("faild to open %s to get modified time.",temp_path)
         // printf("open file to get time faild.\n");
         temp_mkd->modify_time = 0;
     }
@@ -140,12 +140,10 @@ int create_dir(const char *dirpath)
         if (mkdir(dirpath, 0755) == -1)
         {
             LOG_ERROR("mkdir %s error!",dirpath)
-            // printf("mkdir %s error!\n", dirpath);
             return -1;
         }
     }
-    LOG_SUCCESS("mkdir %s successed!")
-    // printf("create dir\n");
+    LOG_SUCCESS("create new floder %s .")
     return 0;
 }
 
@@ -161,7 +159,7 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
 
     if ((dir = opendir(dirpath)) == NULL)
     {
-        LOG_WARN("target markdown file dir don't exist\n try to create it.")
+        LOG_WARN("target markdown file dir don't exist, try to create it.")
         // printf("target markdown file dir don't exist\n try to create it.\n");
         if (create_dir(dirpath) != 0)
         {
@@ -209,39 +207,42 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
 /// @param configure 
 void init_configure(configures* configure){
     configure->markdown_floder = "articles";
-    configure->port = 8000;
+    configure->port = "8000";
 }
 
-int get_configure_mkdpath(configures* configure,cJSON* configure_json){
+enum configureItems_index {
+    CONFIGURE_PORT = 0,
+    CONFIGURE_MKDPATH,
+    TOTAL_CONFIGURES
+};
+
+const char *configure_items[] = {
+    "port",
+    "mkd_path"
+};
+
+int get_configre_x(configures* configure,cJSON* configure_json,int whichConfigure){
     cJSON* pj;
-    pj = cJSON_GetObjectItemCaseSensitive(configure_json,"mkd_path");
+    pj = cJSON_GetObjectItemCaseSensitive(configure_json,configure_items[whichConfigure]);
     if(pj == NULL){
-        LOG_WARN("don't find configure %s in the json file.\n","mkd_path")
-        // printf("don't find configure %s in the json file.\n","mkd_path");
+        LOG_WARN("don't find configure %s in the json file.\n",configure_items[whichConfigure])
         return 1;
     }
-    int path_length = 0;
-    path_length = strlen(cJSON_GetStringValue(pj));
-    configure->markdown_floder = (char*)malloc(sizeof(char)* (path_length+1));
-    strcpy(configure->markdown_floder,cJSON_GetStringValue(pj));
-    return 0;
-}
-
-int get_configure_port(configures* configure,cJSON* configure_json){
-    cJSON* pj;
-    pj = cJSON_GetObjectItemCaseSensitive(configure_json,"port");
-    if(pj == NULL){
-        LOG_WARN("don't find configure %s in the json file.\n","port")
-
-        return 1;
-    }
-    configure->port = (int)cJSON_GetNumberValue(pj);
+    int string_length = 0;
+    string_length = strlen(cJSON_GetStringValue(pj));
+    *(char**)(configure + (sizeof(char*)) * whichConfigure) = (char*)malloc(sizeof(char)* (string_length+1));
+    strcpy(*(char**)(configure + (sizeof(char*))* whichConfigure),cJSON_GetStringValue(pj));
+    LOG_SUCCESS("read configure %s succeed.",configure_items[whichConfigure])
     return 0;
 }
 
 int get_configure(configures* configure,cJSON* configure_json){
-    get_configure_mkdpath(configure,configure_json);
-    get_configure_port(configure,configure_json);
+    int i = 0;
+    int total_get = 0;
+    for(i;i<TOTAL_CONFIGURES;i++){
+        total_get += !(get_configre_x(configure,configure_json,i));
+    }
+    return total_get;
 }
 
 /// @brief 读取配置文件
@@ -298,7 +299,8 @@ configures *read_configure_json(const char *config_file_path)
     }
 
     init_configure(temp_configure);
-    get_configure(temp_configure,temp_json);
+    int total_get = get_configure(temp_configure,temp_json);
+    LOG_NORMAL("get %d of %d configures.",total_get,TOTAL_CONFIGURES)
 
     cJSON_Delete(temp_json);
 
@@ -306,8 +308,7 @@ configures *read_configure_json(const char *config_file_path)
 }
 
 void print_configure(configures *configure){
-    LOG_NORMAL("Port : %d \r\n markdown file store path : %s \r\n",configure->port,configure->markdown_floder)
-    //printf("Port : %d \r\n markdown file store path : %s \r\n",configure->port,configure->markdown_floder);
+    LOG_NORMAL("Port : %s \r\n markdown file store path : %s",configure->port,configure->markdown_floder)
 }
 
 int hex2dec(char c)
