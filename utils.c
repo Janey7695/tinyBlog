@@ -309,7 +309,6 @@ configures *read_configure_json(const char *config_file_path)
         exit(1);
     }
     free(json_string);
-
     // pconfigures = malloc(sizeof(configures));
     // if(pconfigures == NULL){
     //     LOG_WARN("configures alloc faild.\n")

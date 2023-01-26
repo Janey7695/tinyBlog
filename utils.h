@@ -13,7 +13,6 @@
 #include <sys/types.h>
 
 #include "cJSON.h"
-
 #define COLOR_RED_NUM 31
 #define COLOR_GREEN_NUM 32
 #define COLOR_YELLOW_NUM 33
