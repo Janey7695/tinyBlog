@@ -7,13 +7,25 @@
 #define HTML_MD_END "</body></html>"
 #define HTML_EXCEPTMD_LENGTH (sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]) + sizeof(HTML_MD_END) / sizeof(HTML_MD_END[0]) - 2)
 
-char* create_style_tag(configures* configure){
+char* create_style_tag(configures* configure,int pageType){
     char* contentStyleTag = (char*) malloc(sizeof(char) * (100));
     if(contentStyleTag == NULL){
         LOG_WARN("alloc mem faild in %s",__func__)
         return NULL;
     }
-    sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
+    switch (pageType)
+    {
+    case PAGE_TYPE_MARKDOWN:
+        sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
+        break;
+    case PAGE_TYPE_MAINPAGE:
+        sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
+        break;
+    default:
+        sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
+        break;
+    }
+    //sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
     return contentStyleTag;
 }
 
@@ -21,10 +33,10 @@ char* create_style_tag(configures* configure){
 /// @param content 
 /// @param Length 
 /// @return 
-char *wrap_with_html_heads(char* content,int *Length){
+char *wrap_with_html_heads(char* content,int *Length,int pageType){
     char* contentWithHtmlHeads = (char*)malloc(sizeof(char) * (*Length + HTML_EXCEPTMD_LENGTH + 101));
     //print_configure(get_configures_point());
-    char* contentStyleTag = create_style_tag(get_configures_point());
+    char* contentStyleTag = create_style_tag(get_configures_point(),pageType);
     if (contentWithHtmlHeads == NULL)
     {
         LOG_WARN("alloc mem faild in %s .",__func__)

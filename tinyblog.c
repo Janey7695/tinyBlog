@@ -333,7 +333,7 @@ static int on_request(http_conn_t *conn)
             }
             else
             {
-                contentWrapped = wrap_with_html_heads(contentArticlesList, &length);
+                contentWrapped = wrap_with_html_heads(contentArticlesList, &length,PAGE_TYPE_MARKDOWN);
                 if (contentWrapped == NULL)
                 {
                     LOG_WARN("couldn't wrap link list html tags,will return null text.")
@@ -366,7 +366,7 @@ static int on_request(http_conn_t *conn)
             }
             else
             {
-                contentWrapped = wrap_with_html_heads(contentMd, &length);
+                contentWrapped = wrap_with_html_heads(contentMd, &length,PAGE_TYPE_MARKDOWN);
                 if (contentWrapped == NULL)
                 {
                     LOG_WARN("couldn't wrap markdown html tags,will return null text.")
