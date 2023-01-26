@@ -120,17 +120,16 @@ char *parse_articlesList_to_htmlBytesStream(const char *mkd_floder_path,int* len
     }
 
     mkd = mkds->head;
-    content = (char*)malloc(sizeof(char) * (HTML_a_TAG_EXCEPT_LENGTH*files_number1 + HTML_EXCEPTMD_LENGTH + filename_total_length * 2 + 10));
-    offset = sprintf(content, "%s", HTML_MD_BEGIN);
+    content = (char*)malloc(sizeof(char) * (HTML_a_TAG_EXCEPT_LENGTH*files_number1  + filename_total_length * 2 + 10));
     while (mkd)
     {
         offset += sprintf(content + offset, "%s%s%s%s%s", HTML_a_TAG_BEGIN, mkd->filename_without_suffix, HTML_a_TAG_MIDDLE,mkd->filename_without_suffix,HTML_a_TAG_END);
         mkd = mkd->next;
     }
-    offset += sprintf(content + offset,"%s",HTML_MD_END);
     content[offset] = '\0';
     *length = offset;
-    LOG_NORMAL("offset=%d while alloc length=%d\n",offset,HTML_a_TAG_EXCEPT_LENGTH*files_number1 + HTML_EXCEPTMD_LENGTH + filename_total_length * 2 + 10);
+
+    LOG_NORMAL("offset=%d while alloc length=%d\n",offset,HTML_a_TAG_EXCEPT_LENGTH*files_number1  + filename_total_length * 2 + 10);
     free_mkds(mkds);
     return content;
 }

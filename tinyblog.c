@@ -316,11 +316,30 @@ static int on_request(http_conn_t *conn)
         }
         else if (strcmp(req->path, "/article") == 0)
         {
-            char *content;
+            char *contentArticlesList,*contentWrapped;
             int length;
-            content = articles_html(configure->markdown_floder, &length);
-            http_reply(conn, 200, "OK", TEXT_HTML, content, length);
-            free(content);
+            contentArticlesList = parse_articlesList_to_htmlBytesStream(configure->markdown_floder, &length);
+            if (contentArticlesList == NULL)
+            {
+                LOG_WARN("couldn't parse articles list,will return null text.")
+                http_reply(conn, 404, NOT_FOUND, TEXT_HTML, HTML_TAG_BEGIN NOT_FOUND HTML_TAG_END, 0);
+                return 404;
+            }
+            else
+            {
+                contentWrapped = wrap_with_html_heads(contentArticlesList, &length);
+                if (contentWrapped == NULL)
+                {
+                    LOG_WARN("couldn't wrap link list html tags,will return null text.")
+                    http_reply(conn, 404, NOT_FOUND, TEXT_HTML, HTML_TAG_BEGIN NOT_FOUND HTML_TAG_END, 0);
+                    free(contentArticlesList);
+                    return 404;
+                }
+                http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
+                free(contentArticlesList);
+                free(contentWrapped);
+            }
+            http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
             return 200;
         }
         else if (strncmp(req->path, "/articles", 9) == 0)
