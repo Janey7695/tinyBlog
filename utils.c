@@ -5,10 +5,11 @@
 /// @return 返回mkd_files指针 若初始化失败则返回NULL
 mkd_files *init_mkdroot()
 {
-    mkd_files *mkdroot = (mkd_files*)malloc(sizeof(struct markdown_files));
+    mkd_files *mkdroot = (mkd_files *)malloc(sizeof(struct markdown_files));
     if (mkdroot == NULL)
     {
-        printf("create mkdroot faild.\n");
+        LOG_ERROR("alloc mem faild in %s",__func__)
+        // printf("create mkdroot faild.\n");
         exit(1);
     }
     mkdroot->head = NULL;
@@ -17,12 +18,16 @@ mkd_files *init_mkdroot()
     return mkdroot;
 }
 
-char *remove_suffix(char *strings,int stringLength)
+/// @brief 移除文件名后缀
+/// @param strings 
+/// @param stringLength 
+/// @return 
+char *remove_suffix(char *strings, int stringLength)
 {
     if (strings == NULL)
         return NULL;
     char *temp = NULL;
-    temp = (char*)malloc((stringLength + 1) * sizeof(char));
+    temp = (char *)malloc((stringLength + 1) * sizeof(char));
     int i = 0;
     while (strings[i] != '.')
     {
@@ -36,10 +41,10 @@ char *remove_suffix(char *strings,int stringLength)
 /// @brief 创建一个新的mkdfile节点，并填充数据
 /// @param filename 文件名称
 /// @return 返回指向该节点的指针
-mkd_file *create_new_mkd_file(const char *dirpath, const char *filename,int filenameLength)
+mkd_file *create_new_mkd_file(const char *dirpath, const char *filename, int filenameLength)
 {
     mkd_file *temp_mkd = NULL;
-    temp_mkd = (mkd_file*)malloc(sizeof(struct markdown_file));
+    temp_mkd = (mkd_file *)malloc(sizeof(struct markdown_file));
     char temp_path[256];
     FILE *fp;
     int fd;
@@ -47,14 +52,14 @@ mkd_file *create_new_mkd_file(const char *dirpath, const char *filename,int file
 
     if (temp_mkd == NULL)
     {
-        printf("create mkd node faild.\n");
+        LOG_WARN("alloc mem faild in %s",__func__)
         return temp_mkd;
     }
 
-    temp_mkd->filename = (char*)malloc(sizeof(char) * (filenameLength + 1));
+    temp_mkd->filename = (char *)malloc(sizeof(char) * (filenameLength + 1));
     strcpy(temp_mkd->filename, filename);
     temp_mkd->filename[filenameLength] = '\0';
-    temp_mkd->filename_without_suffix = remove_suffix(filename,filenameLength);
+    temp_mkd->filename_without_suffix = remove_suffix(filename, filenameLength);
     sprintf(temp_path, "%s/%s", dirpath, filename);
 
     fp = fopen(temp_path, "r");
@@ -68,7 +73,8 @@ mkd_file *create_new_mkd_file(const char *dirpath, const char *filename,int file
     }
     else
     {
-        printf("open file to get time faild.\n");
+        LOG_WARN("faild to open %s to get modified time.",temp_path)
+        // printf("open file to get time faild.\n");
         temp_mkd->modify_time = 0;
     }
 
@@ -111,7 +117,7 @@ void free_mkds(mkd_files *mkdroot)
     mkd_file *t2;
     t1 = mkdroot->head;
     if (t1->next != NULL)
-            t2 = mkdroot->head->next;
+        t2 = mkdroot->head->next;
     else
         t2 = NULL;
     while (t1)
@@ -133,11 +139,11 @@ int create_dir(const char *dirpath)
     {
         if (mkdir(dirpath, 0755) == -1)
         {
-            printf("mkdir %s error!\n", dirpath);
+            LOG_ERROR("mkdir %s error!",dirpath)
             return -1;
         }
     }
-    printf("create dir\n");
+    LOG_SUCCESS("create new floder %s .")
     return 0;
 }
 
@@ -153,7 +159,8 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
 
     if ((dir = opendir(dirpath)) == NULL)
     {
-        printf("target markdown file dir don't exist\n try to create it.\n");
+        LOG_WARN("target markdown file dir don't exist, try to create it.")
+        // printf("target markdown file dir don't exist\n try to create it.\n");
         if (create_dir(dirpath) != 0)
         {
             exit(1);
@@ -170,17 +177,17 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
         {
             continue;
         }
-            
+
         else if (ptr->d_type == 8) /// file
         {
             total_file_number++;
-            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name,ptr->d_reclen));
+            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name, ptr->d_reclen));
         }
 
         else if (ptr->d_type == 10) /// link file
         {
             total_file_number++;
-            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name,ptr->d_reclen));
+            addMkd_to_mkdroot(mkds, create_new_mkd_file(dirpath, ptr->d_name, ptr->d_reclen));
         }
         else if (ptr->d_type == 4) /// dir
         {
@@ -189,10 +196,171 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
             // strcat(base, "/");
             // strcat(base, ptr->d_name);
             // readFileList(base);
-            printf("seems 3\n");
             continue;
         }
     }
     closedir(dir);
     return total_file_number;
+}
+
+/// @brief 初始化configure
+/// @param configure 
+void init_configure(configures* configure){
+    configure->markdown_floder = "articles";
+    configure->port = "8000";
+}
+
+enum configureItems_index {
+    CONFIGURE_PORT = 0,
+    CONFIGURE_MKDPATH,
+    TOTAL_CONFIGURES
+};
+
+const char *configure_items[] = {
+    "port",
+    "mkd_path"
+};
+
+int get_configre_x(configures* configure,cJSON* configure_json,int whichConfigure){
+    cJSON* pj;
+    pj = cJSON_GetObjectItemCaseSensitive(configure_json,configure_items[whichConfigure]);
+    if(pj == NULL){
+        LOG_WARN("don't find configure %s in the json file.\n",configure_items[whichConfigure])
+        return 1;
+    }
+    int string_length = 0;
+    string_length = strlen(cJSON_GetStringValue(pj));
+    *(char**)(configure + (sizeof(char*)) * whichConfigure) = (char*)malloc(sizeof(char)* (string_length+1));
+    strcpy(*(char**)(configure + (sizeof(char*))* whichConfigure),cJSON_GetStringValue(pj));
+    LOG_SUCCESS("read configure %s succeed.",configure_items[whichConfigure])
+    return 0;
+}
+
+int get_configure(configures* configure,cJSON* configure_json){
+    int i = 0;
+    int total_get = 0;
+    for(i;i<TOTAL_CONFIGURES;i++){
+        total_get += !(get_configre_x(configure,configure_json,i));
+    }
+    return total_get;
+}
+
+/// @brief 读取配置文件
+/// @param config_file_path  配置文件所在位置
+/// @return 配置结构体的指针
+configures *read_configure_json(const char *config_file_path)
+{
+    configures *temp_configure;
+    cJSON *temp_json;
+    cJSON *obj_json;
+    char *json_string;
+    FILE *fp;
+
+    fp = fopen(config_file_path, "r");
+    if (fp == NULL)
+    {
+        LOG_ERROR("can't open configure file %s\n", config_file_path)
+        // printf("can't open configure file %s\n", config_file_path);
+        perror("open configure file : ");
+        exit(1);
+    }
+
+    fseek(fp, 0, SEEK_END);
+    int filesize = 0;
+    filesize = ftell(fp);
+    json_string = (char *)malloc(sizeof(char) * (filesize + 1));
+
+    rewind(fp);
+    fread(json_string, filesize, sizeof(char), fp);
+    json_string[filesize] = '\0';
+    fclose(fp);
+    LOG_NORMAL("read configure file : %s\n",json_string)
+    // printf("read configure file : %s\n",json_string);
+
+    temp_json = cJSON_Parse(json_string);
+    if (temp_json == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+        {
+            fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+        free(json_string);
+        exit(1);
+    }
+    free(json_string);
+
+    temp_configure = malloc(sizeof(configures));
+    if(temp_configure == NULL){
+        LOG_WARN("configures alloc faild.\n")
+        //printf("configures alloc faild.\n");
+        cJSON_Delete(temp_json);
+        exit(1);
+    }
+
+    init_configure(temp_configure);
+    int total_get = get_configure(temp_configure,temp_json);
+    LOG_NORMAL("get %d of %d configures.",total_get,TOTAL_CONFIGURES)
+
+    cJSON_Delete(temp_json);
+
+    return temp_configure;
+}
+
+void print_configure(configures *configure){
+    LOG_NORMAL("Port : %s \r\n markdown file store path : %s",configure->port,configure->markdown_floder)
+}
+
+int hex2dec(char c)
+{
+    if ('0' <= c && c <= '9')
+    {
+        return c - '0';
+    }
+    else if ('a' <= c && c <= 'f')
+    {
+        return c - 'a' + 10;
+    }
+    else if ('A' <= c && c <= 'F')
+    {
+        return c - 'A' + 10;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+void urldecode(char url[])
+{
+    int i = 0;
+    int len = strlen(url);
+    int res_len = 0;
+    char res[2048];
+    for (i = 0; i < len; ++i)
+    {
+        char c = url[i];
+        if (c != '%')
+        {
+            res[res_len++] = c;
+        }
+        else
+        {
+            char c1 = url[++i];
+            char c0 = url[++i];
+            int num = 0;
+            num = hex2dec(c1) * 16 + hex2dec(c0);
+            res[res_len++] = num;
+        }
+    }
+    res[res_len] = '\0';
+    strcpy(url, res);
+}
+
+void get_current_timestamp(char* tss){
+    time_t timep;
+	time(&timep);
+	struct tm *p;
+	p = gmtime(&timep);
+    sprintf(tss,"%d/%d/%d-%d:%d:%d",p->tm_year - 100,1+p->tm_mon,p->tm_mday,8+p->tm_hour,p->tm_min,p->tm_sec);
 }

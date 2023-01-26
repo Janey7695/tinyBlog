@@ -18,7 +18,7 @@
 
 #include "create_html.h"
 #include "utils.h"
-
+#include <locale.h>
 /*
  * workflow:
  * hloop_new -> hloop_create_tcp_server -> hloop_run ->
@@ -29,7 +29,7 @@
  * on_close -> HV_FREE(http_conn_t)
  *
  */
-
+configures* configure;
 static const char* host = "0.0.0.0";
 static int port = 8000;
 static int thread_num = 1;
@@ -210,6 +210,7 @@ static int http_serve_file(http_conn_t* conn) {
     } else {
         // TODO: set content_type by suffix
     }
+    LOG_NORMAL("someone GET index.html")
     hio_setcb_write(conn->io, on_write);
     int nwrite = http_reply(conn, 200, "OK", content_type, NULL, 0);
     if (nwrite < 0) return nwrite; // disconnected
@@ -268,18 +269,19 @@ static int on_request(http_conn_t* conn) {
         else if(strcmp(req->path,"/article") == 0){
             char* content;
             int length;
-            printf("seems enter\n");
-            content = articles_html("articles",&length);
+            content = articles_html(configure->markdown_floder,&length);
             http_reply(conn, 200, "OK", TEXT_HTML, content, length);
             free(content);
-            printf("seems ok\n");
             return 200;
         } else if(strncmp(req->path,"/articles",9) == 0){
             char* content;
             int length;
-            char temp_path[256] = ".";
-            strcat(temp_path,req->path);
-            strcat(temp_path,".md");
+            char temp_path[256] = "";
+            memset(temp_path,0x0,256);
+            urldecode(req->path+9);
+            sprintf(temp_path,"%s/%s.md",configure->markdown_floder,req->path+9);
+            LOG_NORMAL("target file path is : %s",temp_path)
+            // printf("file path is : %s\n",temp_path);
             content = pmd(temp_path,&length);
             http_reply(conn, 200, "OK", TEXT_HTML, content, length);
             free(content);
@@ -471,8 +473,9 @@ static HTHREAD_ROUTINE(accept_thread) {
     if (listenio == NULL) {
         exit(1);
     }
-    printf("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
-            host, port, hio_fd(listenio), thread_num);
+    LOG_SUCCESS("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
+            host, port, hio_fd(listenio), thread_num)
+
     // NOTE: add timer to update date every 1s
     htimer_add(loop, update_date, 1000, INFINITE);
     hloop_run(loop);
@@ -480,18 +483,17 @@ static HTHREAD_ROUTINE(accept_thread) {
 }
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
-        printf("Usage: %s port [thread_num]\n", argv[0]);
+    if (argc < 3) {
+        printf("Usage: %s -c <configure file path>\n", argv[0]);
         return -10;
     }
-    port = atoi(argv[1]);
-    if (argc > 2) {
-        thread_num = atoi(argv[2]);
-    } else {
-        thread_num = get_ncpu();
-    }
+    configure = read_configure_json(argv[2]);
+    print_configure(configure);
+    port = atoi(configure->port);
+    thread_num = get_ncpu();
     if (thread_num == 0) thread_num = 1;
 
+    setlocale(LC_ALL,"en_US.UTF-8");
     worker_loops = (hloop_t**)malloc(sizeof(hloop_t*) * thread_num);
     for (int i = 0; i < thread_num; ++i) {
         worker_loops[i] = hloop_new(HLOOP_FLAG_AUTO_FREE);
