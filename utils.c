@@ -1,5 +1,7 @@
 
 #include "utils.h"
+#include <stddef.h>
+configures globalConfigure;
 
 /// @brief 初始化markdown_files 的根节点
 /// @return 返回mkd_files指针 若初始化失败则返回NULL
@@ -145,7 +147,7 @@ int create_dir(const char *dirpath)
             return -1;
         }
     }
-    LOG_SUCCESS("create new floder %s .")
+    LOG_SUCCESS("create new floder %s .",dirpath)
     return 0;
 }
 
@@ -208,35 +210,50 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
 /// @brief 初始化configure
 /// @param configure 
 void init_configure(configures* configure){
-    configure->markdown_floder = "articles";
-    configure->port = "8000";
-    configure->threads = "0";
+    configure->items[CONFIGURE_MKDPATH] = "articles";
+    configure->items[CONFIGURE_PORT] = "8000";
+    configure->items[CONFIGURE_THREADS] = "0";
+    configure->items[CONFIGURE_THEME] = "default";
 }
 
-enum configureItems_index {
-    CONFIGURE_PORT = 0,
-    CONFIGURE_MKDPATH,
-    CONFIGURE_THREADS,
-    TOTAL_CONFIGURES
-};
+// enum configureItems_index {
+//     CONFIGURE_PORT = 0,
+//     CONFIGURE_MKDPATH,
+//     CONFIGURE_THREADS,
+//     CONFIGURE_THEME,
+//     TOTAL_CONFIGURES
+// };
 
 const char *configure_items[] = {
     "port",
     "mkd_path",
-    "threads"
+    "threads",
+    "theme"
 };
 
 int get_configre_x(configures* configure,cJSON* configure_json,int whichConfigure){
     cJSON* pj;
+    // int i = offsetof(configures,markdown_floder);
+    // printf("%d == i\n",i);
     pj = cJSON_GetObjectItemCaseSensitive(configure_json,configure_items[whichConfigure]);
     if(pj == NULL){
         LOG_WARN("don't find configure %s in the json file.",configure_items[whichConfigure])
         return 1;
     }
     int string_length = 0;
+
+    //printf("hex : %ld %ld %ld %ld\n",&(configure->port),&(configure->markdown_floder),&(configure->threads),&(configure->theme));
     string_length = strlen(cJSON_GetStringValue(pj));
-    *(char**)(configure + (sizeof(char*)) * whichConfigure) = (char*)malloc(sizeof(char)* (string_length+1));
-    strcpy(*(char**)(configure + (sizeof(char*))* whichConfigure),cJSON_GetStringValue(pj));
+    char *temp  = (char*)malloc(sizeof(char)* (string_length+1));
+    strcpy(temp,cJSON_GetStringValue(pj));
+    // *(char**)(configure + (sizeof(char*)) * whichConfigure) = (char*)malloc(sizeof(char)* (string_length+1));
+    // printf("%ld %ld\n",*(char**)(configure + (sizeof(char*)) * whichConfigure),(configure->port));
+    // printf("%ld %ld\n",*(char**)(configure + (sizeof(char*)) * whichConfigure),(configure->markdown_floder));
+    // printf("%ld %ld\n",*(char**)(configure + (sizeof(char*)) * whichConfigure),(configure->threads));
+    // printf("%ld %ld\n",*(char**)(configure + (sizeof(char*)) * whichConfigure),(configure->theme));
+    //*(char**)(configure + (sizeof(char*))* whichConfigure) = temp;
+    configure->items[whichConfigure] = temp;
+    //strcpy(*(char**)(configure + (sizeof(char*))* whichConfigure),cJSON_GetStringValue(pj));
     LOG_SUCCESS("read configure %s succeed.",configure_items[whichConfigure])
     return 0;
 }
@@ -255,7 +272,7 @@ int get_configure(configures* configure,cJSON* configure_json){
 /// @return 配置结构体的指针
 configures *read_configure_json(const char *config_file_path)
 {
-    configures *pconfigures;
+    configures *pconfigures = NULL;
     cJSON *configures_json;
     cJSON *obj_json;
     char *json_string;
@@ -293,21 +310,25 @@ configures *read_configure_json(const char *config_file_path)
     }
     free(json_string);
 
-    pconfigures = malloc(sizeof(configures));
-    if(pconfigures == NULL){
-        LOG_WARN("configures alloc faild.\n")
-        //printf("configures alloc faild.\n");
-        cJSON_Delete(configures_json);
-        exit(1);
-    }
+    // pconfigures = malloc(sizeof(configures));
+    // if(pconfigures == NULL){
+    //     LOG_WARN("configures alloc faild.\n")
+    //     //printf("configures alloc faild.\n");
+    //     cJSON_Delete(configures_json);
+    //     exit(1);
+    // }
 
-    init_configure(pconfigures);
-    int total_get = get_configure(pconfigures,configures_json);
+    init_configure(&globalConfigure);
+    int total_get = get_configure(&globalConfigure,configures_json);
     LOG_NORMAL("get %d of %d configures.",total_get,TOTAL_CONFIGURES)
-
+    pconfigures = &globalConfigure;
     cJSON_Delete(configures_json);
 
     return pconfigures;
+}
+
+configures *get_configures_point(){
+    return &globalConfigure;
 }
 
 /// @brief 输出读取的配置信息
@@ -315,7 +336,7 @@ configures *read_configure_json(const char *config_file_path)
 void print_configure(configures *configure){
     int i = 0;
     for(i;i<TOTAL_CONFIGURES;i++){
-        LOG_NORMAL("%s : %s",configure_items[i],*(char**)(configure + (sizeof(char*))* i))
+        LOG_NORMAL("%s : %s",configure_items[i],configure->items[i])
     }
     //LOG_NORMAL("Port : %s \r\n markdown file store path : %s",configure->port,configure->markdown_floder)
 }

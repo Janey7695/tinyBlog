@@ -15,7 +15,7 @@ cmake --build .
 ```
 
 # Usage
-可执行的二进制文件在`tinyblog/build/bin`中,将`tinyblog/templates`中的`index.html`,`style.css`以及`configure.json`文件放到`可执行文件同目录下`
+可执行的二进制文件在`tinyblog/build/bin`中,将`tinyblog/templates`中的文件放到`可执行文件同目录下`
 
 用法：`tinyblog -c <configure json file path>`,如
 ```

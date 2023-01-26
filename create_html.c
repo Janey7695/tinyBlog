@@ -1,23 +1,43 @@
 #include "create_html.h"
 #include "utils.h"
 #include <locale.h>
+// extern configures* globalConfigure;
 
-#define HTML_MD_BEGIN "<html><head><meta charset=\"UTF-8\"></head><body><link rel=\"stylesheet\" href=\"../style.css\">"
+#define HTML_MD_BEGIN "<html><head><meta charset=\"UTF-8\">"
 #define HTML_MD_END "</body></html>"
 #define HTML_EXCEPTMD_LENGTH (sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]) + sizeof(HTML_MD_END) / sizeof(HTML_MD_END[0]) - 2)
+
+char* create_style_tag(configures* configure){
+    char* contentStyleTag = (char*) malloc(sizeof(char) * (100));
+    if(contentStyleTag == NULL){
+        LOG_WARN("alloc mem faild in %s",__func__)
+        return NULL;
+    }
+    sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
+    return contentStyleTag;
+}
 
 /// @brief 用html的头和尾包裹字节流
 /// @param content 
 /// @param Length 
 /// @return 
 char *wrap_with_html_heads(char* content,int *Length){
-    char* contentWithHtmlHeads = (char*)malloc(sizeof(char) * (*Length + HTML_EXCEPTMD_LENGTH + 1));
+    char* contentWithHtmlHeads = (char*)malloc(sizeof(char) * (*Length + HTML_EXCEPTMD_LENGTH + 101));
+    //print_configure(get_configures_point());
+    char* contentStyleTag = create_style_tag(get_configures_point());
     if (contentWithHtmlHeads == NULL)
     {
         LOG_WARN("alloc mem faild in %s .",__func__)
         return NULL;
     }
-    *Length = sprintf(contentWithHtmlHeads,"%s%s%s", HTML_MD_BEGIN, content, HTML_MD_END);
+    if(contentStyleTag == NULL){
+        LOG_WARN("couldn't find specified theme")
+        *Length = sprintf(contentWithHtmlHeads,"%s%s%s", HTML_MD_BEGIN, content, HTML_MD_END);
+    }else{
+        *Length = sprintf(contentWithHtmlHeads,"%s%s%s%s", HTML_MD_BEGIN, contentStyleTag,content, HTML_MD_END);
+        free(contentStyleTag);
+    }
+    // *Length = sprintf(contentWithHtmlHeads,"%s%s%s", HTML_MD_BEGIN, content, HTML_MD_END);
     return contentWithHtmlHeads;
 }
 

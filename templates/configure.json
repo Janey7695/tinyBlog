@@ -1,4 +1,6 @@
 {
     "port": "8000",
-    "mkd_path": "articles"
+    "mkd_path": "articles",
+    "threads": "2",
+    "theme": "default"
 }

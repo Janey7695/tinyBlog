@@ -29,7 +29,9 @@
  * on_close -> HV_FREE(http_conn_t)
  *
  */
-configures *configure;
+
+
+configures *p_globalConfigure = NULL;
 static const char *host = "0.0.0.0";
 static int port = 8000;
 static int thread_num = 1;
@@ -217,8 +219,11 @@ static int http_serve_file(http_conn_t *conn)
     const char *filepath = req->path + 1;
     // homepage
     if (*filepath == '\0')
-    {
-        filepath = "index.html";
+    {   
+        char indexInThemePath[256];
+        sprintf(indexInThemePath,"themes/%s/index.html",get_configures_point()->items[CONFIGURE_THEME]);
+        //filepath = "index.html";
+        filepath = indexInThemePath;
     }
     // open file
     conn->fp = fopen(filepath, "rb");
@@ -305,20 +310,21 @@ static int on_request(http_conn_t *conn)
     if (strcmp(req->method, "GET") == 0)
     {
         // GET /ping HTTP/1.1\r\n
-        if (strcmp(req->path, "/ping") == 0)
-        {
-            char *content;
-            int length;
-            // content = pmd("README.md",&length);
-            http_reply(conn, 200, "OK", TEXT_HTML, content, length);
-            free(content);
-            return 200;
-        }
-        else if (strcmp(req->path, "/article") == 0)
+        // if (strcmp(req->path, "/ping") == 0)
+        // {
+        //     char *content;
+        //     int length;
+        //     // content = pmd("README.md",&length);
+        //     http_reply(conn, 200, "OK", TEXT_HTML, content, length);
+        //     free(content);
+        //     return 200;
+        // }
+        // else 
+        if (strcmp(req->path, "/article-list") == 0)
         {
             char *contentArticlesList,*contentWrapped;
             int length;
-            contentArticlesList = parse_articlesList_to_htmlBytesStream(configure->markdown_floder, &length);
+            contentArticlesList = parse_articlesList_to_htmlBytesStream(p_globalConfigure->items[CONFIGURE_MKDPATH], &length);
             if (contentArticlesList == NULL)
             {
                 LOG_WARN("couldn't parse articles list,will return null text.")
@@ -349,7 +355,7 @@ static int on_request(http_conn_t *conn)
             char filePath[256] = "";
             memset(filePath, 0x0, 256);
             urldecode(req->path + 9);
-            sprintf(filePath, "%s%s.md", configure->markdown_floder, req->path + 9);
+            sprintf(filePath, "%s%s.md", p_globalConfigure->items[CONFIGURE_MKDPATH], req->path + 9);
             LOG_NORMAL("a user want to read file : %s", filePath)
             contentMd = parse_md_to_htmlBytesStream(filePath, &length);
             if (contentMd == NULL)
@@ -614,12 +620,15 @@ int main(int argc, char **argv)
         printf("Usage: %s -c <configure file path>\n", argv[0]);
         return -10;
     }
-    configure = read_configure_json(argv[2]);
-    print_configure(configure);
-    port = atoi(configure->port);
-    if (configure->threads[0] != 'd')
+
+    p_globalConfigure = read_configure_json(argv[2]);
+    print_configure(p_globalConfigure);
+
+    port = atoi(p_globalConfigure->items[CONFIGURE_PORT]);
+
+    if (p_globalConfigure->items[CONFIGURE_THREADS][0] != 'd')
     {
-        thread_num = atoi(configure->threads);
+        thread_num = atoi(p_globalConfigure->items[CONFIGURE_THREADS]);
     }
     else
     {
