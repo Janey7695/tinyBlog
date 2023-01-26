@@ -1,30 +1,19 @@
 # How to Build
-1. 本程序依赖于`libhv`以及`moonrise`，需要先编译二者的动态库
-    - 进入项目主目录 `cd tinyblog`
-    - 获取代码 `git submodule update --init --recursive` . 若libhv库没有被拉取，需要手动添加
- `git submodule add https://gitee.com/libhv/libhv.git libhv`
-
-    - 编译libhv 
-    
-    ```
-    mkdir libhv/build
-    cd libhv/build
-    cmake ..
-    cmake --build .
-    ```
-    - 编译moonrise 
-    
-    ```
-    cd moonrise
-    make
-    ```
-2. 编译tinyblog  
+## Clone and Get submodule
+```shell
+git clone https://github.com/janey7695/tinyblog
+cd tinyblog
+git submodule update --init --recursive
 ```
+
+## Build
+```shell
 mkdir build
 cd build
 cmake ..
 cmake --build .
 ```
+
 # Usage
 可执行的二进制文件在`tinyblog/build/bin`中,将`tinyblog/templates`中的`index.html`,`style.css`以及`configure.json`文件放到`可执行文件同目录下`
 
