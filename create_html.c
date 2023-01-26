@@ -6,14 +6,18 @@
 #define HTML_MD_END "</body></html>"
 #define HTML_EXCEPTMD_LENGTH (sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]) + sizeof(HTML_MD_END) / sizeof(HTML_MD_END[0]) - 2)
 
-char *wrap_with_html_heads(const char* content,int *Length){
+/// @brief 用html的头和尾包裹字节流
+/// @param content 
+/// @param Length 
+/// @return 
+char *wrap_with_html_heads(char* content,int *Length){
     char* contentWithHtmlHeads = (char*)malloc(sizeof(char) * (*Length + HTML_EXCEPTMD_LENGTH + 1));
     if (contentWithHtmlHeads == NULL)
     {
         LOG_WARN("alloc mem faild in %s .",__func__)
         return NULL;
     }
-    *Length = sprintf(contentWithHtmlHeads,"%s%s%s",, HTML_MD_BEGIN, content, HTML_MD_END);
+    *Length = sprintf(contentWithHtmlHeads,"%s%s%s", HTML_MD_BEGIN, content, HTML_MD_END);
     return contentWithHtmlHeads;
 }
 
@@ -58,7 +62,7 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
     markdown = sd_markdown_new(MKDEXT_FENCED_CODE | MKDEXT_TABLES | MKDEXT_STRIKETHROUGH, 16, &callbacks, &options);
 
     sd_markdown_render(ob, ib->data, ib->size, markdown);
-    content = (char *)malloc(sizeof(char) * (strlen(ob->data) + HTML_EXCEPTMD_LENGTH + 2));
+    content = (char *)malloc(sizeof(char) * (strlen(ob->data) + 2));
     if (content != NULL)
     {
         LOG_SUCCESS("alloc mem for markdown2html buffer succed.")
@@ -69,15 +73,14 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
         free(content);
         bufrelease(ib);
         bufrelease(ob);
-        LOG_WARN("alloc mem for markdown2html buffer faild.")
+        LOG_WARN("alloc mem for markdown2html buffer faild in %s",__func__)
         return NULL;
     }
-    *length = sprintf(content, "%s%s%s", HTML_MD_BEGIN, ob->data, HTML_MD_END);
+    *length = sprintf(content, "%s",ob->data);
     content[*length] = '\0';
     sd_markdown_free(markdown);
     bufrelease(ib);
     bufrelease(ob);
-    LOG_NORMAL("read %d bytes to the buffer.", *length);
     return content;
 }
 
@@ -90,7 +93,7 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
 /// @param mkd_floder_path markdown文件的存放位置
 /// @param length 返回的内容的长度
 /// @return 返回指向包含html内容的指针
-char *articles_html(const char *mkd_floder_path,int* length)
+char *parse_articlesList_to_htmlBytesStream(const char *mkd_floder_path,int* length)
 {
     mkd_files *mkds;
     mkd_file *mkd;
@@ -114,17 +117,14 @@ char *articles_html(const char *mkd_floder_path,int* length)
     {
         filename_total_length += strlen(mkd->filename_without_suffix);
         mkd = mkd->next;
-        //printf("seems count\n");
     }
 
     mkd = mkds->head;
     content = (char*)malloc(sizeof(char) * (HTML_a_TAG_EXCEPT_LENGTH*files_number1 + HTML_EXCEPTMD_LENGTH + filename_total_length * 2 + 10));
     offset = sprintf(content, "%s", HTML_MD_BEGIN);
-    //printf("%d :: %d",offset,sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]));
     while (mkd)
     {
         offset += sprintf(content + offset, "%s%s%s%s%s", HTML_a_TAG_BEGIN, mkd->filename_without_suffix, HTML_a_TAG_MIDDLE,mkd->filename_without_suffix,HTML_a_TAG_END);
-        //printf("%s\n",mkd->filename_without_suffix);
         mkd = mkd->next;
     }
     offset += sprintf(content + offset,"%s",HTML_MD_END);

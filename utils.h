@@ -31,6 +31,7 @@ typedef struct
 {
     char* port;
     char* markdown_floder;
+    char* threads;
     
 }configures;
 

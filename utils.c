@@ -210,24 +210,27 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
 void init_configure(configures* configure){
     configure->markdown_floder = "articles";
     configure->port = "8000";
+    configure->threads = "0";
 }
 
 enum configureItems_index {
     CONFIGURE_PORT = 0,
     CONFIGURE_MKDPATH,
+    CONFIGURE_THREADS,
     TOTAL_CONFIGURES
 };
 
 const char *configure_items[] = {
     "port",
-    "mkd_path"
+    "mkd_path",
+    "threads"
 };
 
 int get_configre_x(configures* configure,cJSON* configure_json,int whichConfigure){
     cJSON* pj;
     pj = cJSON_GetObjectItemCaseSensitive(configure_json,configure_items[whichConfigure]);
     if(pj == NULL){
-        LOG_WARN("don't find configure %s in the json file.\n",configure_items[whichConfigure])
+        LOG_WARN("don't find configure %s in the json file.",configure_items[whichConfigure])
         return 1;
     }
     int string_length = 0;
@@ -310,7 +313,11 @@ configures *read_configure_json(const char *config_file_path)
 /// @brief 输出读取的配置信息
 /// @param configure 
 void print_configure(configures *configure){
-    LOG_NORMAL("Port : %s \r\n markdown file store path : %s",configure->port,configure->markdown_floder)
+    int i = 0;
+    for(i;i<TOTAL_CONFIGURES;i++){
+        LOG_NORMAL("%s : %s",configure_items[i],*(char**)(configure + (sizeof(char*))* i))
+    }
+    //LOG_NORMAL("Port : %s \r\n markdown file store path : %s",configure->port,configure->markdown_floder)
 }
 
 int hex2dec(char c)
