@@ -279,7 +279,7 @@ static int on_request(http_conn_t* conn) {
             char temp_path[256] = "";
             memset(temp_path,0x0,256);
             urldecode(req->path+9);
-            sprintf(temp_path,"%s/%s.md",configure->markdown_floder,req->path+9);
+            sprintf(temp_path,"%s%s.md",configure->markdown_floder,req->path+9);
             LOG_NORMAL("target file path is : %s",temp_path)
             // printf("file path is : %s\n",temp_path);
             content = pmd(temp_path,&length);

@@ -6,12 +6,22 @@
 #define HTML_MD_END "</body></html>"
 #define HTML_EXCEPTMD_LENGTH (sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]) + sizeof(HTML_MD_END) / sizeof(HTML_MD_END[0]) - 2)
 
+char *wrap_with_html_heads(const char* content,int *Length){
+    char* contentWithHtmlHeads = (char*)malloc(sizeof(char) * (*Length + HTML_EXCEPTMD_LENGTH + 1));
+    if (contentWithHtmlHeads == NULL)
+    {
+        LOG_WARN("alloc mem faild in %s .",__func__)
+        return NULL;
+    }
+    *Length = sprintf(contentWithHtmlHeads,"%s%s%s",, HTML_MD_BEGIN, content, HTML_MD_END);
+    return contentWithHtmlHeads;
+}
 
-/// @brief 解析markdown 为 html
+/// @brief 解析markdown 为 包含html标签的字节流
 /// @param filepath markdown文件路径
 /// @param length 转换后的字节长度
-/// @return 返回转换后的html内容指针
-char *pmd(const char *filepath, int *length)
+/// @return 返回转换后的字节流指针
+char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
 {
     struct buf *ib, *ob;
     int ret;
@@ -22,10 +32,7 @@ char *pmd(const char *filepath, int *length)
     struct sd_markdown *markdown;
 
     char *content = NULL;
-    char *old_locale = NULL;
-    /* opening the file if given from the command line */
-    LOG_NORMAL("will open : %s.",filepath)
-    //printf("will open:%s \n",filepath);
+    // LOG_NORMAL("will open : %s.",filepath)
     in = fopen(filepath, "r");
     if (!in)
     {
@@ -65,12 +72,8 @@ char *pmd(const char *filepath, int *length)
         LOG_WARN("alloc mem for markdown2html buffer faild.")
         return NULL;
     }
-    // printf("%s%s%s",HTML_MD_BEGIN,ob->data,HTML_MD_END);
-    // printf("ok,length \n");
     *length = sprintf(content, "%s%s%s", HTML_MD_BEGIN, ob->data, HTML_MD_END);
     content[*length] = '\0';
-    // strcpy(content,ob->data);
-    // *length = ob->size;
     sd_markdown_free(markdown);
     bufrelease(ib);
     bufrelease(ob);
