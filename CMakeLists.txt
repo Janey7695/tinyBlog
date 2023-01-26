@@ -6,6 +6,8 @@ set(CMAKE_BUILD_TYPE Debug)
 set(EXECUTABLE_OUTPUT_PATH ./bin)
 set(LIBRARY_OUTPUT_DIRECTORY ./lib)
 
+add_subdirectory(./libhv)
+
 set(MOONRISE_SRC ./moonrise/src/markdown.c 
     ./moonrise/src/buffer.c 
     ./moonrise/src/stack.c 
@@ -20,9 +22,9 @@ set(TINYBLOG_SRC ./tinyblog.c ./create_html.c ./utils.c ./cjson/cJSON.c ${MOONRI
 
 set(OUTPUT_BIN tinyblog)
 
-include_directories(./libhv/build/include/hv ./moonrise/src ./moonrise/html ./cjson)
+include_directories(./build/libhv/include/hv ./moonrise/src ./moonrise/html ./cjson)
 
-link_directories(./libhv/build/lib)
+link_directories(./build/lib)
 
 add_executable(${OUTPUT_BIN} ${TINYBLOG_SRC})
 
