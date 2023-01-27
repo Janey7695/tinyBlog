@@ -217,10 +217,10 @@ static int http_serve_file(http_conn_t *conn)
     http_msg_t *resp = &conn->response;
     // GET / HTTP/1.1\r\n
     const char *filepath = req->path + 1;
+    char indexInThemePath[256];
     // homepage
     if (*filepath == '\0')
     {   
-        char indexInThemePath[256];
         sprintf(indexInThemePath,"themes/%s/index.html",get_configures_point()->items[CONFIGURE_THEME]);
         //filepath = "index.html";
         filepath = indexInThemePath;
