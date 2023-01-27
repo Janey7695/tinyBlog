@@ -26,4 +26,4 @@ link_directories(./libhv/build/lib)
 add_executable(${OUTPUT_BIN} ${TINYBLOG_SRC})
 
 
-target_link_libraries(${OUTPUT_BIN} libhv_static pthread)
+target_link_libraries(${OUTPUT_BIN} libhv_static.a pthread)
