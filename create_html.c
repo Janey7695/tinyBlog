@@ -16,10 +16,10 @@ char* create_style_tag(configures* configure,int pageType){
     switch (pageType)
     {
     case PAGE_TYPE_MARKDOWN:
-        sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
+        sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/mkd-style.css\">",configure->items[CONFIGURE_THEME]);
         break;
     case PAGE_TYPE_MAINPAGE:
-        sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
+        sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/home-style.css\">",configure->items[CONFIGURE_THEME]);
         break;
     default:
         sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
