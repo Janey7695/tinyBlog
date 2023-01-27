@@ -19,6 +19,16 @@ __几乎没有哈哈！__
 git clone https://github.com/janey7695/tinyblog
 cd tinyblog
 git submodule update --init --recursive
+cd libhv
+mkdir build
+cd build
+cmake ..
+cmake --build .
+cd ../..
+mkdir build
+cd build
+cmake ..
+cmake --build .
 ```
 
 ## Build
