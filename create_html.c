@@ -1,7 +1,7 @@
 #include "create_html.h"
 #include "utils.h"
 #include <locale.h>
-// extern configures* globalConfigure;
+
 
 #define HTML_MD_BEGIN "<html><head><meta charset=\"UTF-8\">"
 #define HTML_MD_END "</body></html>"
@@ -68,7 +68,9 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
     struct sd_markdown *markdown;
 
     char *content = NULL;
+
     // LOG_NORMAL("will open : %s.",filepath)
+
     in = fopen(filepath, "r");
     if (!in)
     {
@@ -94,7 +96,9 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
     markdown = sd_markdown_new(MKDEXT_FENCED_CODE | MKDEXT_TABLES | MKDEXT_STRIKETHROUGH, 16, &callbacks, &options);
 
     sd_markdown_render(ob, ib->data, ib->size, markdown);
+
     content = (char *)malloc(sizeof(char) * (strlen(ob->data) + 2));
+
     if (content != NULL)
     {
         LOG_SUCCESS("alloc mem for markdown2html buffer succed.")
@@ -105,7 +109,9 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
         free(content);
         bufrelease(ib);
         bufrelease(ob);
+
         LOG_WARN("alloc mem for markdown2html buffer faild in %s",__func__)
+
         return NULL;
     }
     *length = sprintf(content, "%s",ob->data);
@@ -113,6 +119,7 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
     sd_markdown_free(markdown);
     bufrelease(ib);
     bufrelease(ob);
+
     return content;
 }
 
@@ -149,8 +156,8 @@ char *parse_articlesList_to_htmlBytesStream(const char *mkd_floder_path,int* len
     {
         filename_total_length += strlen(mkd->filename_without_suffix);
         mkd = mkd->next;
-    }
 
+    }
     mkd = mkds->head;
     content = (char*)malloc(sizeof(char) * (HTML_a_TAG_EXCEPT_LENGTH*files_number1  + filename_total_length * 2 + 10));
     while (mkd)
