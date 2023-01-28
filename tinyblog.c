@@ -30,6 +30,7 @@
  *
  */
 
+#define VERSION "1.0.2"
 
 configures *p_globalConfigure = NULL;
 static const char *host = "0.0.0.0";
@@ -326,7 +327,7 @@ static int on_request(http_conn_t *conn)
             char *contentNav,*contentArticlesList,*contentWrapped;
             int length=0;
             contentArticlesList = parse_articlesList_to_htmlBytesStream(p_globalConfigure->items[CONFIGURE_MKDPATH], &length);
-            LOG_WARN("size is %d",strlen(contentArticlesList))
+            DEBUG_WARN("size is %d",strlen(contentArticlesList))
             if (contentArticlesList == NULL)
             {
                 LOG_WARN("couldn't parse articles list,will return null text.")
@@ -344,7 +345,7 @@ static int on_request(http_conn_t *conn)
                     return 404;
                 }
                 http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
-                LOG_WARN("size is %d",strlen(contentWrapped))
+                DEBUG_WARN("size is %d",strlen(contentWrapped))
                 free(contentArticlesList);
                 free(contentWrapped);
             }
@@ -377,7 +378,7 @@ static int on_request(http_conn_t *conn)
                 char *contentNavMd = (char*)malloc(sizeof(char) * (len+1));
                 length = sprintf(contentNavMd,"%s%s",contentNav,contentMd);
                 contentNavMd[length] = '\0';
-                LOG_WARN("size is %d",strlen(contentNavMd))
+                DEBUG_WARN("size is %d",strlen(contentNavMd))
                 contentWrapped = wrap_with_html_heads(contentNavMd, &length,PAGE_TYPE_MARKDOWN);
                 if (contentWrapped == NULL)
                 {
@@ -389,7 +390,7 @@ static int on_request(http_conn_t *conn)
                     return 404;
                 }
                 http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
-                LOG_WARN("size is %d",strlen(contentWrapped))
+                DEBUG_WARN("size is %d",strlen(contentWrapped))
                 free(contentMd);
                 free(contentWrapped);
                 free(contentNav);

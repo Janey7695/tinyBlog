@@ -11,7 +11,7 @@ char *create_style_tag(configures *configure, int pageType)
     char *contentStyleTag = (char *)malloc(sizeof(char) * (100));
     if (contentStyleTag == NULL)
     {
-        LOG_WARN("alloc mem faild in %s", __func__)
+        DEBUG_WARN("alloc mem faild in %s", __func__)
         return NULL;
     }
     switch (pageType)
@@ -41,11 +41,11 @@ char *wrap_with_html_heads(char *content, int *Length, int pageType)
 {
     int len=0;
     char *contentWithHtmlHeads = (char *)malloc(sizeof(char) * (*Length + HTML_EXCEPTMD_LENGTH + 101));
-    LOG_WARN("alloc %d bytes in %s",*Length + HTML_EXCEPTMD_LENGTH + 101,__func__)
+    DEBUG_WARN("alloc %d bytes in %s",*Length + HTML_EXCEPTMD_LENGTH + 101,__func__)
     char *contentStyleTag = create_style_tag(get_configures_point(), pageType);
     if (contentWithHtmlHeads == NULL)
     {
-        LOG_WARN("alloc mem faild in %s .", __func__)
+        DEBUG_WARN("alloc mem faild in %s .", __func__)
         return NULL;
     }
     if (contentStyleTag == NULL)
@@ -59,7 +59,7 @@ char *wrap_with_html_heads(char *content, int *Length, int pageType)
         free(contentStyleTag);
     }
     contentWithHtmlHeads[len] = '\0';
-    LOG_WARN("write %d bytes in %s",len,__func__)
+    DEBUG_WARN("write %d bytes in %s",len,__func__)
     *Length = len;
     // *Length = sprintf(contentWithHtmlHeads,"%s%s%s", HTML_MD_BEGIN, content, HTML_MD_END);
     return contentWithHtmlHeads;
@@ -73,13 +73,13 @@ char *create_nav_htmlBytesStream(int *length)
     int len=0;
     char *content = (char*)malloc(sizeof(char) * (HTML_NAV_TAG_LENGTH +1));
     if(content == NULL){
-        LOG_WARN("alloc mem faild in %s",__func__)
+        DEBUG_WARN("alloc mem faild in %s",__func__)
         return NULL;
     }
-    LOG_WARN("alloc %d bytes in %s",HTML_NAV_TAG_LENGTH +1,__func__)
+    DEBUG_WARN("alloc %d bytes in %s",HTML_NAV_TAG_LENGTH +1,__func__)
     len = sprintf(content,"%s",HTML_NAV_TAG);
     content[len] = '\0';
-    LOG_WARN("write %d bytes in %s",len,__func__)
+    DEBUG_WARN("write %d bytes in %s",len,__func__)
     *length = len;
     return content;
 }
@@ -133,8 +133,8 @@ char *parse_mdtoc_to_htmlBytesStream(const char *filepath, int *length){
 
     if (content != NULL)
     {
-        LOG_SUCCESS("alloc mem for markdown2html buffer succed.")
-        LOG_WARN("alloc %d bytes in %s",strlen(ob->data) + 2,__func__)
+        DEBUG_SUCCESS("alloc mem for markdown2html buffer succed.")
+        DEBUG_WARN("alloc %d bytes in %s",strlen(ob->data) + 2,__func__)
         // printf("alloc mem succ\n");
     }
     else
@@ -143,13 +143,13 @@ char *parse_mdtoc_to_htmlBytesStream(const char *filepath, int *length){
         bufrelease(ib);
         bufrelease(ob);
 
-        LOG_WARN("alloc mem for markdown2html buffer faild in %s", __func__)
+        DEBUG_WARN("alloc mem for markdown2html buffer faild in %s", __func__)
 
         return NULL;
     }
     len = sprintf(content, "%s", ob->data);
     content[len] = '\0';
-    LOG_WARN("write %d bytes in %s",len,__func__)
+    DEBUG_WARN("write %d bytes in %s",len,__func__)
     *length = len;
     bufrelease(ib);
     bufrelease(ob);
@@ -216,8 +216,8 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
 
     if (content != NULL)
     {
-        LOG_SUCCESS("alloc mem for markdown2html buffer succed.")
-        LOG_WARN("alloc %d bytes in %s",strlen(ob->data) + 2,__func__)
+        DEBUG_SUCCESS("alloc mem for markdown2html buffer succed.")
+        DEBUG_WARN("alloc %d bytes in %s",strlen(ob->data) + 2,__func__)
         // printf("alloc mem succ\n");
     }
     else
@@ -226,13 +226,13 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
         bufrelease(ib);
         bufrelease(ob);
 
-        LOG_WARN("alloc mem for markdown2html buffer faild in %s", __func__)
+        DEBUG_WARN("alloc mem for markdown2html buffer faild in %s", __func__)
 
         return NULL;
     }
     len = sprintf(content, "%s", ob->data);
     content[len] = '\0';
-    LOG_WARN("write %d bytes in %s",len,__func__)
+    DEBUG_WARN("write %d bytes in %s",len,__func__)
     *length = len;
     bufrelease(ib);
     bufrelease(ob);
@@ -285,7 +285,7 @@ char *parse_articlesList_to_htmlBytesStream(const char *mkd_floder_path, int *le
     content[offset] = '\0';
     *length += offset;
 
-    LOG_NORMAL("offset=%d while alloc length=%d\n", offset, HTML_a_TAG_EXCEPT_LENGTH * files_number1 + filename_total_length * 2 + 10);
+    DEBUG_NORMAL("offset=%d while alloc length=%d\n", offset, HTML_a_TAG_EXCEPT_LENGTH * files_number1 + filename_total_length * 2 + 10);
     free_mkds(mkds);
     return content;
 }
