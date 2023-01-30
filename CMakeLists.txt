@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(tinyBlog VERSION 1.0.3)
+project(tinyBlog VERSION 1.0.9)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(EXECUTABLE_OUTPUT_PATH ./bin)
@@ -15,11 +15,17 @@ set(MOONRISE_SRC ./moonrise/src/markdown.c
     ./moonrise/html/html_smartypants.c
     )
 
-set(TINYBLOG_SRC ./src/tinyblog.c ./src/create_html.c ./src/utils.c ./cjson/cJSON.c ${MOONRISE_SRC})
+set(UTILS_SRC ./src/utils/utils.c
+    ./src/utils/targs.c
+    ./src/utils/tconfigure.c
+    ./src/utils/tmkd.c
+    )
+
+set(TINYBLOG_SRC ./src/main.c  ./src/create_html.c ./cjson/cJSON.c ${UTILS_SRC} ${MOONRISE_SRC})
 
 set(OUTPUT_BIN tinyblog)
 
-include_directories(./libhv/build/include/hv ./moonrise/src ./moonrise/html ./cjson ./src)
+include_directories(./libhv/build/include/hv ./moonrise/src ./moonrise/html ./cjson ./src ./src/utils)
 
 link_directories(./libhv/build/lib)
 

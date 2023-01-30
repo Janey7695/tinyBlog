@@ -6,6 +6,10 @@
 #define HTML_MD_END "</body></html>"
 #define HTML_EXCEPTMD_LENGTH (sizeof(HTML_MD_BEGIN) / sizeof(HTML_MD_BEGIN[0]) + sizeof(HTML_MD_END) / sizeof(HTML_MD_END[0]) - 2)
 
+/// @brief 生成包含指明css样式表路径的标签字节流
+/// @param configure 全局配置configure的指针
+/// @param pageType 需要生成的页面的类型，有PAGE_TYPE_MARKDOWN，PAGE_TYPE_MAINPAGE，PAGE_TYPE_LISTPAGE
+/// @return 包含指明css样式表路径的标签字节流的指针
 char *create_style_tag(configures *configure, int pageType)
 {
     char *contentStyleTag = (char *)malloc(sizeof(char) * (100));
@@ -29,7 +33,6 @@ char *create_style_tag(configures *configure, int pageType)
         sprintf(contentStyleTag, "<link rel=\"stylesheet\" href=\"../themes/%s/style.css\"><body>", configure->items[CONFIGURE_THEME]);
         break;
     }
-    // sprintf(contentStyleTag,"<link rel=\"stylesheet\" href=\"../themes/%s/style.css\">",configure->items[CONFIGURE_THEME]);
     return contentStyleTag;
 }
 
@@ -68,6 +71,9 @@ char *wrap_with_html_heads(char *content, int *Length, int pageType)
 #define HTML_NAV_TAG "<div class=\"container\"><nav><a href=\"/themes/pop-blue/index.html\">home</a><a href=\"/article-list\">archive</a><a href=\"/about-me\">about</a></nav></div>"
 #define HTML_NAV_TAG_LENGTH (sizeof(HTML_NAV_TAG) / sizeof(HTML_NAV_TAG[0]) -1)
 
+/// @brief 生成包含nav导航标签的字节流
+/// @param length 
+/// @return 包含nav导航标签的字节流的指针
 char *create_nav_htmlBytesStream(int *length)
 {
     int len=0;
@@ -84,6 +90,10 @@ char *create_nav_htmlBytesStream(int *length)
     return content;
 }
 
+/// @brief 解析markdown文件生成toc的html字节流
+/// @param filepath markdown文件路径
+/// @param length 
+/// @return 字节流指针
 char *parse_mdtoc_to_htmlBytesStream(const char *filepath, int *length){
     struct buf *ib, *ob;
     int ret;
@@ -290,17 +300,17 @@ char *parse_articlesList_to_htmlBytesStream(const char *mkd_floder_path, int *le
     return content;
 }
 
-int create_static_html(const char *save_path, char *content, int length)
-{
-    FILE *fp;
-    content[length] = '\0';
-    fp = fopen(save_path, "w+");
-    if (fp == NULL)
-    {
-        printf("open file faild.\n");
-        return 1;
-    }
-    fputs(content, fp);
-    fclose(fp);
-    return 0;
-}
+// int create_static_html(const char *save_path, char *content, int length)
+// {
+//     FILE *fp;
+//     content[length] = '\0';
+//     fp = fopen(save_path, "w+");
+//     if (fp == NULL)
+//     {
+//         printf("open file faild.\n");
+//         return 1;
+//     }
+//     fputs(content, fp);
+//     fclose(fp);
+//     return 0;
+// }

@@ -30,8 +30,6 @@
  *
  */
 
-#define VERSION "1.0.3"
-
 configures *p_globalConfigure = NULL;
 static const char *host = "0.0.0.0";
 static int port = 8000;
@@ -633,14 +631,9 @@ static HTHREAD_ROUTINE(accept_thread)
 
 int main(int argc, char **argv)
 {
-    if (argc < 3)
-    {
-        printf("Usage: %s -c <configure file path>\n", argv[0]);
-        return -10;
-    }
+    targs_deal_args(argc,argv);
 
-    p_globalConfigure = read_configure_json(argv[2]);
-    print_configure(p_globalConfigure);
+    p_globalConfigure = get_configures_point();
 
     port = atoi(p_globalConfigure->items[CONFIGURE_PORT]);
 

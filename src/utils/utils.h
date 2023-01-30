@@ -14,6 +14,8 @@
 
 #include "cJSON.h"
 
+#include "tversion.h"
+
 // #define DEBUG_LOG
 #define COLOR_RED_NUM 31
 #define COLOR_GREEN_NUM 32
@@ -85,10 +87,13 @@ typedef struct markdown_files
 mkd_files *init_mkdroot();
 int get_mkd_files_name(const char *dirpath, mkd_files *mkds);
 void free_mkds(mkd_files *mkdroot);
+char *remove_suffix(char *filename, int stringLength);
 int create_dir(const char *dirpath);
 configures *read_configure_json(const char *config_file_path);
 void print_configure(configures *configure);
 void urldecode(char url[]);
 void get_current_timestamp(char *tss);
 configures *get_configures_point();
+int targs_deal_args(int argc, char **argv);
+
 #endif
