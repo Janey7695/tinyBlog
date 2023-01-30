@@ -30,7 +30,7 @@
  *
  */
 
-#define VERSION "1.0.2"
+#define VERSION "1.0.3"
 
 configures *p_globalConfigure = NULL;
 static const char *host = "0.0.0.0";
