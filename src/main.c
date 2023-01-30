@@ -30,7 +30,6 @@
  *
  */
 
-
 configures *p_globalConfigure = NULL;
 static const char *host = "0.0.0.0";
 static int port = 8000;
@@ -230,6 +229,7 @@ static int http_serve_file(http_conn_t *conn)
     if (!conn->fp)
     {
         http_reply(conn, 404, NOT_FOUND, TEXT_HTML, HTML_TAG_BEGIN NOT_FOUND HTML_TAG_END, 0);
+        LOG_WARN("open index file: %s faild",filepath)
         return 404;
     }
     // send head
@@ -322,9 +322,10 @@ static int on_request(http_conn_t *conn)
         // else 
         if (strcmp(req->path, "/article-list") == 0)
         {
-            char *contentArticlesList,*contentWrapped;
-            int length;
+            char *contentNav,*contentArticlesList,*contentWrapped;
+            int length=0;
             contentArticlesList = parse_articlesList_to_htmlBytesStream(p_globalConfigure->items[CONFIGURE_MKDPATH], &length);
+            DEBUG_WARN("size is %d",strlen(contentArticlesList))
             if (contentArticlesList == NULL)
             {
                 LOG_WARN("couldn't parse articles list,will return null text.")
@@ -333,7 +334,7 @@ static int on_request(http_conn_t *conn)
             }
             else
             {
-                contentWrapped = wrap_with_html_heads(contentArticlesList, &length,PAGE_TYPE_MARKDOWN);
+                contentWrapped = wrap_with_html_heads(contentArticlesList, &length,PAGE_TYPE_LISTPAGE);
                 if (contentWrapped == NULL)
                 {
                     LOG_WARN("couldn't wrap link list html tags,will return null text.")
@@ -342,22 +343,26 @@ static int on_request(http_conn_t *conn)
                     return 404;
                 }
                 http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
+                DEBUG_WARN("size is %d",strlen(contentWrapped))
                 free(contentArticlesList);
                 free(contentWrapped);
             }
-            http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
+            // http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
+            // free(contentArticlesList);
+            // free(contentWrapped);
             return 200;
         }
         else if (strncmp(req->path, "/articles", 9) == 0)
         {
-            char *contentMd, *contentWrapped;
-            int length;
+            char *contentNav,*contentMd, *contentWrapped;
+            int length=0,len=0;
             char filePath[256] = "";
             memset(filePath, 0x0, 256);
             urldecode(req->path + 9);
             sprintf(filePath, "%s%s.md", p_globalConfigure->items[CONFIGURE_MKDPATH], req->path + 9);
             LOG_NORMAL("a user want to read file : %s", filePath)
             contentMd = parse_md_to_htmlBytesStream(filePath, &length);
+            len += length;
             if (contentMd == NULL)
             {
                 LOG_WARN("couldn't parse markdown file,will return null text.")
@@ -366,17 +371,28 @@ static int on_request(http_conn_t *conn)
             }
             else
             {
-                contentWrapped = wrap_with_html_heads(contentMd, &length,PAGE_TYPE_MARKDOWN);
+                contentNav = create_nav_htmlBytesStream(&length);
+                len += length;
+                char *contentNavMd = (char*)malloc(sizeof(char) * (len+1));
+                length = sprintf(contentNavMd,"%s%s",contentNav,contentMd);
+                contentNavMd[length] = '\0';
+                DEBUG_WARN("size is %d",strlen(contentNavMd))
+                contentWrapped = wrap_with_html_heads(contentNavMd, &length,PAGE_TYPE_MARKDOWN);
                 if (contentWrapped == NULL)
                 {
                     LOG_WARN("couldn't wrap markdown html tags,will return null text.")
                     http_reply(conn, 404, NOT_FOUND, TEXT_HTML, HTML_TAG_BEGIN NOT_FOUND HTML_TAG_END, 0);
                     free(contentMd);
+                    free(contentNav);
+                    free(contentNavMd);
                     return 404;
                 }
                 http_reply(conn, 200, "OK", TEXT_HTML, contentWrapped, length);
+                DEBUG_WARN("size is %d",strlen(contentWrapped))
                 free(contentMd);
                 free(contentWrapped);
+                free(contentNav);
+                free(contentNavMd);
             }
             return 200;
         }
@@ -615,14 +631,9 @@ static HTHREAD_ROUTINE(accept_thread)
 
 int main(int argc, char **argv)
 {
-    if (argc < 3)
-    {
-        printf("Usage: %s -c <configure file path>\n", argv[0]);
-        return -10;
-    }
+    targs_deal_args(argc,argv);
 
-    p_globalConfigure = read_configure_json(argv[2]);
-    print_configure(p_globalConfigure);
+    p_globalConfigure = get_configures_point();
 
     port = atoi(p_globalConfigure->items[CONFIGURE_PORT]);
 

@@ -4,6 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/src/utils",
                 "${workspaceFolder}/build/libhv/include/hv/",
                 "${workspaceFolder}/moonrise/src/",
                 "${workspaceFolder}/moonrise/html/",

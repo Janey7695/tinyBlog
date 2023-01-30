@@ -15,7 +15,8 @@
 
 enum {
     PAGE_TYPE_MARKDOWN = 0,
-    PAGE_TYPE_MAINPAGE
+    PAGE_TYPE_MAINPAGE,
+    PAGE_TYPE_LISTPAGE
 };
 
 char *wrap_with_html_heads(char* content,int *Length,int pageType);
@@ -24,6 +25,8 @@ char *parse_articlesList_to_htmlBytesStream(const char *mkd_floder_path,int* len
 char* pmd(const char* filepath,int* length);
 char *articles_html(const char *mkd_floder_path,int* length);
 int create_static_html(const char* save_path,char* content,int length);
+char *create_nav_htmlBytesStream(int *length);
+char *parse_mdtoc_to_htmlBytesStream(const char *filepath, int *length);
 
 
 #endif
