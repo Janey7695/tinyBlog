@@ -1,5 +1,5 @@
 # 这是什么？ What is it?
-![version: 1.0.0 (shields.io)](https://img.shields.io/badge/version-1.0.0-brightgreen)
+![version: 1.0.9 (shields.io)](https://img.shields.io/badge/version-1.0.9-brightgreen)
 
 `tinyBlog`是一款简单、纯粹、低占用的博客软件，正如所介绍的：
 1. 简单：其只实现了一个简单的http服务器，支持的`http GET`也很少，支持主题样式自定义
@@ -23,18 +23,9 @@ git submodule update --init --recursive
 
 ## Build
 ```shell
-cd libhv
-mkdir build
-cd build
-cmake ..
-cmake --build .
-cd ../..
-mkdir build
-cd build
-cmake ..
-cmake --build .
+make
 ```
-
+暂无`make install`选项，需要的话拷贝可执行的二进制文件到自己需要的位置去即可
 # 使用 Usage
 
 可执行的二进制文件在`tinyblog/build/bin`中,将`tinyblog/templates`中的文件放到`可执行文件同目录下`
@@ -53,9 +44,14 @@ cmake --build .
 ```shell
 your-theme-floder
 ├── index.html
-└── style.css
+├── xx-style.css
+└── xx-style.css
 ```
-使用时将主题文件夹整个放到`themes`文件夹中，再到`configure.json`文件中修改`theme`的值为主题文件夹的名字即可
+其中不同的`xx-style.css`负责不同页面的渲染，但是`xx`有规定，命名必须遵循如下：
+- `home-style.css` 负责主页的样式渲染
+- `mkd-style.css` 负责文章页面的渲染
+- `list-style.css` 负责`Archive`即文章列表页面的渲染
+使用时将主题文件夹整个放到`themes`文件夹中，再到`configure.json`文件中修改`theme`的值为主题文件夹的名字`your-theme-floder`即可
 
 # Thanks
 
