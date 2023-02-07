@@ -1,5 +1,5 @@
 #include "create_html.h"
-#include "utils.h"
+#include "./utils/utils.h"
 #include <locale.h>
 
 #define HTML_MD_BEGIN "<html><head><meta charset=\"UTF-8\">"

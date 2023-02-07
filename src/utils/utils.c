@@ -24,6 +24,55 @@ char *remove_suffix(char *filename, int stringLength)
 }
 
 
+char *get_suffix(char *filename)
+{
+	if (filename == NULL) {
+		return NULL;
+	}
+	char *suffix = NULL;
+	int filenameLength = strlen(filename);
+	int i = 0;
+	for (i=filenameLength-1; i>=0; i--) {
+		if (filename[i]!='.') {
+			continue;
+		}	
+		suffix = TMALLOC(char, filenameLength - i + 1 +1);
+		strcpy(suffix, filename+i+1);
+		suffix[filenameLength -i +1+1]='\0';	
+		DEBUG_NORMAL("file %s suffix is %s",filename,suffix)
+		return suffix;
+	}
+	DEBUG_NORMAL("don't find suffix for file %s in %s",filename,__func__);
+	return NULL;
+}
+
+char *find_next_char(char *s1,char tag)
+{
+	char *s1p = s1;
+	while(*s1p == tag && *s1p != '\0'){
+			s1p++;
+	}
+	return s1p;
+}
+
+char *slice_with_char(char *s1,char tag,int sliceLength){
+	char *fragment = NULL;	
+	char *s_temp = s1;	
+	int fragmentLength = 0;
+	if (*s1 == tag) {
+		s_temp = find_next_char(fragment, tag);
+	}
+	while(s_temp[fragmentLength] != tag && s_temp[fragmentLength] != '\0'){
+		fragmentLength++;
+	}
+	fragment = TMALLOC(char, fragmentLength);
+	fragment[fragmentLength] = '\0';
+	for (--fragmentLength; fragmentLength>=0;fragmentLength-- ) {
+		fragment[fragmentLength] = s_temp[fragmentLength];
+	}
+}
+
+
 /// @brief 在当前目录下创建一个新文件夹
 /// @param dirpath 目录名称
 /// @return -1失败 0成功
