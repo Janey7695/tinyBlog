@@ -16,7 +16,7 @@
 
 #include "tversion.h"
 
-#define DEBUG_LOG
+//#define DEBUG_LOG
 
 /*loglevel to print 
  *

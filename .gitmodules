@@ -1,6 +1,3 @@
-[submodule "libhv"]
-	path = libhv
-	url = https://github.com/ithewei/libhv.git
 [submodule "moonrise"]
 	path = moonrise
 	url = https://github.com/Janey7695/moonrise.git
