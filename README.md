@@ -1,10 +1,10 @@
 # 这是什么？ What is it?
-![version: 1.0.9 (shields.io)](https://img.shields.io/badge/version-1.0.9-brightgreen)
+![version: 1.2.0 (shields.io)](https://img.shields.io/badge/version-1.2.0-brightgreen)
 
 `tinyBlog`是一款简单、纯粹、低占用的博客软件，正如所介绍的：
-1. 简单：其只实现了一个简单的http服务器，支持的`http GET`也很少，支持主题样式自定义
+1. 简单：其只实现了一个简单的http服务器，支持主题样式自定义
 2. 纯粹：个人认为Blog软件即为了Blog而生，只是纯粹的分享，记录自己所发生的所见识的，因此`tinyblog`没有华丽的功能，复杂的接口，就只是将`markdown`文件转换为`html`页面而已
-3. 低占用：得益于高效的`libhv`->[ithewei/libhv](https://github.com/ithewei/libhv.git)以及代码的优化,能够多线程快速处理响应请求，内存占用可以控制在`3MB`左右
+3. 低占用：正常使用内存占用不超过3M
 
 # 特性 Feature
 __几乎没有哈哈！__
@@ -57,6 +57,6 @@ your-theme-floder
 
 |项目名称|作用简介|仓库地址|
 |---|---|---|
-|libhv|直接使用了其http的例子|https://github.com/ithewei/libhv.git|
+|tOO|自己写的简单的线程池|https://github.com/janey7695/too.git|
 |sundown(moonrise)|作为markdown解析器|https://github.com/vmg/sundown|
 |cJSON|cjson解析器，用以解析配置文件|https://github.com/DaveGamble/cJSON|
