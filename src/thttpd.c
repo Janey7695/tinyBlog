@@ -18,7 +18,7 @@
 
 #define ISspace(x) isspace((int)(x))
 
-#define SERVER_STRING "Server: tinyBlog/1.0.11"
+#define SERVER_STRING "tinyBlog/1.2.0"
 
 http_message_t *parse_http_message(int sock);
 void create_http_response_statusline(http_message_t *phmsg,
@@ -29,12 +29,127 @@ void set_http_response_body_charbuf(http_message_t *phmsg, const char *charbuf);
 void set_http_response_body_file(http_message_t *phmsg, FILE *fp);
 void http_reply(http_message_t *phmsg, char *status_code, char *status_message, char *content_type, void *body, int body_type);
 void http_send(int client,http_message_t *phmsg);
+http_header_t *create_new_header_from_oneline(char *oneline);
+http_header_t *create_new_header_from_keyvalue(char *key,char *value);
+int append_header(http_headers_t *headers_rootnode,http_header_t *header_newnode);
+
+http_header_t *create_new_header_from_oneline(char *oneline){
+	http_header_t*pnewheader = NULL;
+	if (strcmp(oneline, "\r\n") == 0) {
+		return NULL;
+	}
+	pnewheader = TMALLOC(http_header_t, 1);
+	if (pnewheader == NULL) {
+		LOG_ERROR("malloc memory faild in %s",__func__)
+		return NULL;
+	}
+	char *s1,*s2;
+	int length = 0;
+	s1 = oneline;
+	s2 = oneline;
+	while(*s1 != ' ' && *s1 !=':'){
+		length++;
+		s1++;
+	}
+	pnewheader->key = TMALLOC(char, length + 1);
+	pnewheader->key[length] = '\0';
+	for (--length; length >= 0; length--) {
+		pnewheader->key[length] = s2[length];
+	}
+	s1 = seek_until(s1, ':');
+	s1 = skip_char(s1+1,' ');
+	s2 = s1;
+	length = 0;
+	while (*s1 != '\r' && *s1 != '\0') {
+		s1++;
+		length++;
+	}
+	pnewheader->value = TMALLOC(char, length + 1);
+	pnewheader->value[length] = '\0';
+	for (--length; length >= 0; length--) {
+		pnewheader->value[length] = s2[length];
+	}
+
+	pnewheader->next = NULL;
+
+	DEBUG_NORMAL("You get %s : %s ",pnewheader->key,pnewheader->value)
+	
+	return pnewheader;
+
+}
+
+http_header_t *create_new_header_from_keyvalue(char *key,char *value){
+	http_header_t *pnewheader = NULL;
+	char *p1=NULL,*p2=NULL;
+	int length = 0;
+	if (key == NULL || value == NULL) {
+		LOG_WARN("you pass a null key or value string point in %s",__func__)
+		return NULL;
+	}
+	pnewheader = TMALLOC(http_header_t, 1);
+	if (pnewheader == NULL) {
+		LOG_ERROR("malloc memory faild in %s",__func__)
+		return NULL;
+	}
+	length = strlen(key);
+	p1 = TMALLOC(char, length + 1);
+	strcpy(p1, key);
+	p1[length] = '\0';
+	length = strlen(value);
+	p2 = TMALLOC(char, length + 1);
+	strcpy(p2, value);
+	p2[length] = '\0';
+
+	pnewheader->key = p1;
+	pnewheader->value = p2;
+	pnewheader->next = NULL;
+
+	DEBUG_NORMAL("You create %s : %s ",pnewheader->key,pnewheader->value)
+
+	return pnewheader;
+	
+}
+
+int append_header(http_headers_t *headers_rootnode,http_header_t *header_newnode){
+	if (headers_rootnode == NULL || header_newnode == NULL) {
+		LOG_WARN("you pass a null node in %s ",__func__)
+		return 0;	
+	}
+	if (headers_rootnode->head == NULL && headers_rootnode->tail == NULL) {
+		headers_rootnode->head = header_newnode;
+		headers_rootnode->tail = header_newnode;
+		headers_rootnode->headers_number += 1;
+		return headers_rootnode->headers_number;
+	}
+	headers_rootnode->tail->next = header_newnode;
+	headers_rootnode->tail = header_newnode;
+	headers_rootnode->headers_number += 1;
+	return headers_rootnode->headers_number;
+
+}
+
+void free_headers(http_headers_t *headers_rootnode){
+	http_header_t *pheader1 = headers_rootnode->head;
+	http_header_t *pheader2 = pheader1;
+	if (pheader1 == NULL) {
+		return ;
+	}
+	while (pheader1->next != NULL) {
+		pheader2 = pheader1->next;
+		free(pheader1);
+		pheader1 = pheader2;
+	}
+	free(pheader1);
+	headers_rootnode->head = NULL;
+	headers_rootnode->tail = NULL;
+}
 
 http_message_t *parse_http_message(int sock) {
   char buf[1024];
   int numberChars = 0;
   int i = 0, j = 0;
   http_message_t *phmsg = TMALLOC(http_message_t, 1);
+
   if (phmsg == NULL) {
     LOG_ERROR("alloc memory faild in %s", __func__)
     return NULL;
@@ -45,41 +160,61 @@ http_message_t *parse_http_message(int sock) {
     phmsg->request.method[i] = buf[i];
     i++;
   }
-  DEBUG_NORMAL("i is %d", i)
   phmsg->request.method[i] = '\0';
   while (buf[i] != '/') {
     i++;
   }
-  DEBUG_NORMAL("i is %d", i)
   while (buf[i] != ' ') {
     phmsg->request.path[j++] = buf[i++];
   }
-  DEBUG_NORMAL("i is %d", i)
-  DEBUG_NORMAL("j is %d", j)
   phmsg->request.path[j] = '\0';
   while (buf[i] == ' ') {
     i++;
   }
-  DEBUG_NORMAL("i is %d", i)
   j = 0;
   while (buf[i] != ' ' && buf[i] != '\0') {
     phmsg->request.protocol[j++] = buf[i++];
   }
-  DEBUG_NORMAL("i is %d", i)
-  DEBUG_NORMAL("j is %d", j)
   phmsg->request.protocol[j] = '\0';
 
-  phmsg->request.headers[0] = '\0';
+  phmsg->request.headers = TMALLOC(http_headers_t, 1);
+  if (phmsg->request.headers == NULL) {
+  	LOG_ERROR("alloc memory faild in %s",__func__)
+	return NULL;
+  }
+  phmsg->request.headers->headers_number = 0;
+  phmsg->request.headers->head = NULL;
+  phmsg->request.headers->tail = NULL;
   while ((numberChars > 0) && strcmp("\n", buf)) {
     numberChars = get_line(sock, buf, sizeof(buf));
-    strcat(phmsg->request.headers, buf);
+	DEBUG_NORMAL("You may get %s ",buf);
+	append_header(phmsg->request.headers, create_new_header_from_oneline(buf));
   }
-  DEBUG_NORMAL("headers length is %d ", strlen(phmsg->request.headers))
 
   phmsg->response.fp = NULL;
   phmsg->response.charbuf = NULL;
+  phmsg->response.headers = TMALLOC(http_headers_t, 1);
+  if (phmsg->response.headers == NULL) {
+  	LOG_ERROR("alloc memory faild in %s",__func__)
+	return NULL;
+  }
+  phmsg->response.headers->headers_number = 0;
+  phmsg->response.headers->head = NULL;
+  phmsg->response.headers->tail = NULL;
+
+  append_header(phmsg->response.headers, create_new_header_from_keyvalue("Server",SERVER_STRING));
 
   return phmsg;
+}
+
+void free_http_message(http_message_t *phmsg){
+	if (phmsg->request.headers != NULL) {
+		free_headers(phmsg->request.headers);
+	}	
+	if (phmsg->response.headers != NULL) {
+		free_headers(phmsg->response.headers);
+	}
+	free(phmsg);
 }
 
 void create_http_response_statusline(http_message_t *phmsg,
@@ -111,6 +246,7 @@ void http_reply(http_message_t *phmsg, char *status_code, char *status_message, 
 {
 	create_http_response_statusline(phmsg, "HTTP/1.0", status_code, status_message);
 	phmsg->response.contentType = content_type;
+	append_header(phmsg->response.headers, create_new_header_from_keyvalue("Content-Type", content_type));
 	if(body_type == 0){
 		phmsg->response.charbuf = (char *)body;
 	}else {
@@ -139,78 +275,7 @@ void accept_request(void *arg) {
   DEBUG_NORMAL("Method : %s", phttp_message->request.method);
   DEBUG_NORMAL("Path : %s", phttp_message->request.path);
   DEBUG_NORMAL("protocol : %s", phttp_message->request.protocol);
-  DEBUG_NORMAL("Headers : %s", phttp_message->request.headers);
-  /*
-   // 读http 请求的第一行数据（request line），把请求方法存进 method 中
-   numchars = get_line(client, buf, sizeof(buf));
-   i = 0;
-   j = 0;
-   while (!ISspace(buf[j]) && (i < sizeof(method) - 1)) {
-     method[i] = buf[j];
-     i++;
-     j++;
-   }
-   method[i] = '\0';
-
-   // 如果请求的方法不是 GET 或 POST 任意一个的话就直接发送 response
-   // 告诉客户端没实现该方法
-   if (strcasecmp(method, "GET") && strcasecmp(method, "POST")) {
-     unimplemented(client);
-     return;
-   }
-
-   // 如果是 POST 方法就将 cgi 标志变量置一(true)
-   if (strcasecmp(method, "POST") == 0)
-     cgi = 1;
-
-   i = 0;
-   // 跳过所有的空白字符(空格)
-   while (ISspace(buf[j]) && (j < sizeof(buf)))
-     j++;
-
-   // 然后把 URL 读出来放到 url 数组中
-   while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf))) {
-     url[i] = buf[j];
-     i++;
-     j++;
-   }
-   url[i] = '\0';
-
-   // 如果这个请求是一个 GET 方法的话
-   if (strcasecmp(method, "GET") == 0) {
-     // 用一个指针指向 url
-     query_string = url;
-
-     // 去遍历这个 url，跳过字符 ？前面的所有字符，如果遍历完毕也没找到字符
-     // ？则退出循环
-     while ((*query_string != '?') && (*query_string != '\0'))
-       query_string++;
-
-     // 退出循环后检查当前的字符是 ？还是字符串(url)的结尾
-     if (*query_string == '?') {
-       // 如果是 ？ 的话，证明这个请求需要调用 cgi，将 cgi 标志变量置一(true)
-       cgi = 1;
-       // 从字符 ？ 处把字符串 url 给分隔会两份
-       *query_string = '\0';
-       // 使指针指向字符 ？后面的那个字符
-       query_string++;
-     }
-   }
-
-   DEBUG_WARN("request to open %s", url);
- */
   if (strcmp(phttp_message->request.method, "GET") == 0) {
-    // GET /ping HTTP/1.1\r\n
-    // if (strcmp(req->path, "/ping") == 0)
-    // {
-    //     char *content;
-    //     int length;
-    //     // content = pmd("README.md",&length);
-    //     http_reply(conn, 200, "OK", TEXT_HTML, content, length);
-    //     free(content);
-    //     return 200;
-    // }
-    // else
     if (strcmp(phttp_message->request.path, "/article-list") == 0) {
       char *contentNav, *contentArticlesList, *contentWrapped;
       int length = 0;
@@ -222,7 +287,7 @@ void accept_request(void *arg) {
         not_found(client);
         close(client);
         free((int *)arg);
-        free(phttp_message);
+		free_http_message(phttp_message);
         return;
         // return 404 page
       } else {
@@ -235,7 +300,7 @@ void accept_request(void *arg) {
           not_found(client);
           close(client);
           free((int *)arg);
-          free(phttp_message);
+		  free_http_message(phttp_message);
           return;
         }
         // return content page
@@ -251,7 +316,7 @@ void accept_request(void *arg) {
       }
       close(client);
       free((int *)arg);
-      free(phttp_message);
+	  free_http_message(phttp_message);
       return;
     } else if (strncmp(phttp_message->request.path, "/articles", 9) == 0) {
       char *contentNav, *contentMd, *contentWrapped;
@@ -271,6 +336,7 @@ void accept_request(void *arg) {
         close(client);
         free((int *)arg);
         free(phttp_message);
+		free_http_message(phttp_message);
         return;
         // return 404 page
       } else {
@@ -291,7 +357,7 @@ void accept_request(void *arg) {
           free(contentNavMd);
           close(client);
           free((int *)arg);
-          free(phttp_message);
+          free_http_message(phttp_message);
           return;
         }
         // return conntent page
@@ -309,7 +375,7 @@ void accept_request(void *arg) {
       }
       close(client);
       free((int *)arg);
-      free(phttp_message);
+      free_http_message(phttp_message);
       return;
     } else {
       // TODO: Add handler for your path
@@ -325,7 +391,6 @@ void accept_request(void *arg) {
                    get_configures_point()->items[CONFIGURE_THEME]);
 
   path[len1] = '\0';
-  printf("will open %s", path);
 
   // 在系统上去查询该文件是否存在
   if (stat(path, &st) == -1) {
@@ -365,7 +430,7 @@ void accept_request(void *arg) {
 
   close(client);
   free((int *)arg);
-  free(phttp_message);
+  free_http_message(phttp_message);
 }
 
 void bad_request(int client) {
@@ -442,122 +507,8 @@ void error_die(const char *sc) {
 /**********************************************************************/
 void execute_cgi(int client, const char *path, const char *method,
                  const char *query_string) {
-  char buf[1024];
-  int cgi_output[2];
-  int cgi_input[2];
-  pid_t pid;
-  int status;
-  int i;
-  char c;
-  int numchars = 1;
-  int content_length = -1;
-
-  // 往 buf 中填东西以保证能进入下面的 while
-  buf[0] = 'A';
-  buf[1] = '\0';
-  // 如果是 http 请求是 GET 方法的话读取并忽略请求剩下的内容
-  if (strcasecmp(method, "GET") == 0)
-    while ((numchars > 0) && strcmp("\n", buf)) /* read & discard headers */
-      numchars = get_line(client, buf, sizeof(buf));
-  else /* POST */
-  {
-    // 只有 POST 方法才继续读内容
-    numchars = get_line(client, buf, sizeof(buf));
-    // 这个循环的目的是读出指示 body 长度大小的参数，并记录 body
-    // 的长度大小。其余的 header 里面的参数一律忽略 注意这里只读完 header
-    // 的内容，body 的内容没有读
-    while ((numchars > 0) && strcmp("\n", buf)) {
-      buf[15] = '\0';
-      if (strcasecmp(buf, "Content-Length:") == 0)
-        content_length = atoi(&(buf[16])); // 记录 body 的长度大小
-      numchars = get_line(client, buf, sizeof(buf));
-    }
-
-    // 如果 http 请求的 header 没有指示 body 长度大小的参数，则报错返回
-    if (content_length == -1) {
-      bad_request(client);
-      return;
-    }
+	// TODO
   }
-
-  sprintf(buf, "HTTP/1.0 200 OK\r\n");
-  send(client, buf, strlen(buf), 0);
-
-  // 下面这里创建两个管道，用于两个进程间通信
-  if (pipe(cgi_output) < 0) {
-    cannot_execute(client);
-    return;
-  }
-  if (pipe(cgi_input) < 0) {
-    cannot_execute(client);
-    return;
-  }
-
-  // 创建一个子进程
-  if ((pid = fork()) < 0) {
-    cannot_execute(client);
-    return;
-  }
-
-  // 子进程用来执行 cgi 脚本
-  if (pid == 0) /* child: CGI script */
-  {
-    char meth_env[255];
-    char query_env[255];
-    char length_env[255];
-
-    // dup2()包含<unistd.h>中，参读《TLPI》P97
-    // 将子进程的输出由标准输出重定向到 cgi_ouput 的管道写端上
-    dup2(cgi_output[1], 1);
-    // 将子进程的输出由标准输入重定向到 cgi_ouput 的管道读端上
-    dup2(cgi_input[0], 0);
-    // 关闭 cgi_ouput 管道的读端与cgi_input 管道的写端
-    close(cgi_output[0]);
-    close(cgi_input[1]);
-
-    // 构造一个环境变量
-    sprintf(meth_env, "REQUEST_METHOD=%s", method);
-    // putenv()包含于<stdlib.h>中，参读《TLPI》P128
-    // 将这个环境变量加进子进程的运行环境中
-    putenv(meth_env);
-
-    // 根据http 请求的不同方法，构造并存储不同的环境变量
-    if (strcasecmp(method, "GET") == 0) {
-      sprintf(query_env, "QUERY_STRING=%s", query_string);
-      putenv(query_env);
-    } else { /* POST */
-      sprintf(length_env, "CONTENT_LENGTH=%d", content_length);
-      putenv(length_env);
-    }
-
-    // execl()包含于<unistd.h>中，参读《TLPI》P567
-    // 最后将子进程替换成另一个进程并执行 cgi 脚本
-    execl(path, path, NULL);
-    exit(0);
-  } else { /* parent */
-    // 父进程则关闭了 cgi_output管道的写端和 cgi_input 管道的读端
-    close(cgi_output[1]);
-    close(cgi_input[0]);
-
-    // 如果是 POST 方法的话就继续读 body 的内容，并写到 cgi_input
-    // 管道里让子进程去读
-    if (strcasecmp(method, "POST") == 0)
-      for (i = 0; i < content_length; i++) {
-        recv(client, &c, 1, 0);
-        write(cgi_input[1], &c, 1);
-      }
-
-    // 然后从 cgi_output 管道中读子进程的输出，并发送到客户端去
-    while (read(cgi_output[0], &c, 1) > 0)
-      send(client, &c, 1, 0);
-
-    // 关闭管道
-    close(cgi_output[0]);
-    close(cgi_input[1]);
-    // 等待子进程的退出
-    waitpid(pid, &status, 0);
-  }
-}
 
 /**********************************************************************/
 /* Get a line from a socket, whether the line ends in a newline,
@@ -607,6 +558,7 @@ void http_send(int client,http_message_t *phmsg)
 	char *protocol,*status_code,*status_message,*headers;
 	char *statuslinebuf = NULL;
 	char headersbuf[1024];
+	http_header_t *pheader;
 	protocol = phmsg->response.protocol;
 	status_code = phmsg->response.status_code;
 	status_message = phmsg->response.status_message;
@@ -615,10 +567,17 @@ void http_send(int client,http_message_t *phmsg)
 	statuslinebuf = TMALLOC(char, l1);
 	l1 = sprintf(statuslinebuf, "%s %s %s\r\n",protocol,status_code,status_message);
 	statuslinebuf[l1] = '\0';
-	
-	headersbuf[0] = '\0';
-	int l2 = sprintf(headersbuf, "%s\r\nContent-Type: %s\r\n\r\n",SERVER_STRING,phmsg->response.contentType);
+
+	int l2 = 0;
+	pheader = phmsg->response.headers->head;
+	while (pheader != NULL) {
+		l2 += sprintf(headersbuf+l2, "%s: %s\r\n",pheader->key,pheader->value);
+		pheader = pheader->next;
+	}
+
+	l2 += sprintf(headersbuf+l2, "\r\n");
 	headersbuf[l2] = '\0';
+	DEBUG_NORMAL("rspon header : %s",headersbuf)
 	
 	send(client, statuslinebuf, l1, 0);
 	send(client, headersbuf, l2, 0);

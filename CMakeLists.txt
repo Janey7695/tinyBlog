@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(tinyBlog VERSION 1.0.10)
+project(tinyBlog VERSION 1.2.0)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(EXECUTABLE_OUTPUT_PATH ./bin)

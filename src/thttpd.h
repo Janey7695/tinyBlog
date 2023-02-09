@@ -4,18 +4,33 @@
 #include <sys/types.h>
 
 
+typedef struct request_header{
+	char *key;
+	char *value;
+	struct request_header *next;
+}http_header_t;
+
+typedef struct {
+	http_header_t *head;
+	http_header_t *tail;
+	int headers_number;
+}http_headers_t;
+
+
 typedef struct{
 	char method[10];
 	char path[100];
 	char protocol[15];
-	char headers[1024];
+	//char headers[1024];
+	http_headers_t *headers;
 }http_request_t;
 
 typedef struct{
 	char protocol[15];
 	char status_code[5];
 	char status_message[20];
-	char headers[1024];
+//	char headers[1024];
+	http_headers_t *headers;
 	char *contentType;
 	char *charbuf;
 	FILE *fp;

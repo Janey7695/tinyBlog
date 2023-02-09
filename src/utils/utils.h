@@ -127,4 +127,8 @@ void get_current_timestamp(char *tss);
 configures *get_configures_point();
 int targs_deal_args(int argc, char **argv);
 
+
+char *skip_char(char *s1,char skipchar);
+char *seek_until(char *s1,char overchar);
+
 #endif

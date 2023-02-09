@@ -46,31 +46,26 @@ char *get_suffix(char *filename)
 	return NULL;
 }
 
-char *find_next_char(char *s1,char tag)
+// 返回跳过skipchar字符后的字符串起始地址
+char *skip_char(char *s1,char skipchar)
 {
-	char *s1p = s1;
-	while(*s1p == tag && *s1p != '\0'){
-			s1p++;
+	char *ps = s1;
+	while (*ps == skipchar && *ps != '\0') {
+		ps++;
 	}
-	return s1p;
+	return ps;
 }
 
-char *slice_with_char(char *s1,char tag,int sliceLength){
-	char *fragment = NULL;	
-	char *s_temp = s1;	
-	int fragmentLength = 0;
-	if (*s1 == tag) {
-		s_temp = find_next_char(fragment, tag);
+// 在s1中寻找某个字符，第一次遇到该字符时终止，并返回由该字符起始的字符串的地址
+char *seek_until(char *s1,char overchar)
+{
+	char *ps = s1;
+	while(*ps != overchar && *ps != '\0'){
+			ps++;
 	}
-	while(s_temp[fragmentLength] != tag && s_temp[fragmentLength] != '\0'){
-		fragmentLength++;
-	}
-	fragment = TMALLOC(char, fragmentLength);
-	fragment[fragmentLength] = '\0';
-	for (--fragmentLength; fragmentLength>=0;fragmentLength-- ) {
-		fragment[fragmentLength] = s_temp[fragmentLength];
-	}
+	return ps;
 }
+
 
 
 /// @brief 在当前目录下创建一个新文件夹
