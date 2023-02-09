@@ -24,6 +24,50 @@ char *remove_suffix(char *filename, int stringLength)
 }
 
 
+char *get_suffix(char *filename)
+{
+	if (filename == NULL) {
+		return NULL;
+	}
+	char *suffix = NULL;
+	int filenameLength = strlen(filename);
+	int i = 0;
+	for (i=filenameLength-1; i>=0; i--) {
+		if (filename[i]!='.') {
+			continue;
+		}	
+		suffix = TMALLOC(char, filenameLength - i + 1 +1);
+		strcpy(suffix, filename+i+1);
+		suffix[filenameLength -i +1+1]='\0';	
+		DEBUG_NORMAL("file %s suffix is %s",filename,suffix)
+		return suffix;
+	}
+	DEBUG_NORMAL("don't find suffix for file %s in %s",filename,__func__);
+	return NULL;
+}
+
+// 返回跳过skipchar字符后的字符串起始地址
+char *skip_char(char *s1,char skipchar)
+{
+	char *ps = s1;
+	while (*ps == skipchar && *ps != '\0') {
+		ps++;
+	}
+	return ps;
+}
+
+// 在s1中寻找某个字符，第一次遇到该字符时终止，并返回由该字符起始的字符串的地址
+char *seek_until(char *s1,char overchar)
+{
+	char *ps = s1;
+	while(*ps != overchar && *ps != '\0'){
+			ps++;
+	}
+	return ps;
+}
+
+
+
 /// @brief 在当前目录下创建一个新文件夹
 /// @param dirpath 目录名称
 /// @return -1失败 0成功

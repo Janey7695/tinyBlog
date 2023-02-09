@@ -1,2 +1,4 @@
 build
 units_test.c
+.cache
+compile_commands.json

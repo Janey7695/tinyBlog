@@ -1,9 +1,9 @@
-[submodule "libhv"]
-	path = libhv
-	url = https://github.com/ithewei/libhv.git
 [submodule "moonrise"]
 	path = moonrise
 	url = https://github.com/Janey7695/moonrise.git
 [submodule "cjson"]
 	path = cjson
 	url = https://github.com/DaveGamble/cJSON.git
+[submodule "tOO"]
+	path = tOO
+	url = https://github.com/janey7695/too.git
