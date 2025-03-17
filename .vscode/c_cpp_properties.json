@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/src/utils",
-                "${workspaceFolder}/build/libhv/include/hv/",
+                "${workspaceFolder}/src/threadpool",
                 "${workspaceFolder}/moonrise/src/",
                 "${workspaceFolder}/moonrise/html/",
                 "&{workspaceFolder}/cjson"

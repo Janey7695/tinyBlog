@@ -16,7 +16,7 @@
 
 #include "tversion.h"
 
-//#define DEBUG_LOG
+#define DEBUG_LOG
 
 /*loglevel to print 
  *
@@ -26,7 +26,7 @@
  * 3 = only print Error level
  *
  * */
-#define LOGLEVEL_TO_PRINT 2 
+#define LOGLEVEL_TO_PRINT 0 
 
 #define COLOR_RED_NUM 31
 #define COLOR_GREEN_NUM 32
