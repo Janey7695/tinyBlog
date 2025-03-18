@@ -13,6 +13,7 @@ extern "C"
 #include <sys/wait.h>
 #include "threadpool/threadpool.h"
 #include "log/log.h"
+#include "net/epoll.h"
 #include <iostream>
 
 configures *p_globalConfigure = NULL;
@@ -39,17 +40,18 @@ static int thread_num = 1;
 
 /**********************************************************************/
 
-int server_sock = -1;
+int server_sock_g = -1;
 
 void exit_handle(int)
 {
   PR_INFO("exit .. \r\n");
-  close(server_sock);
+  close(server_sock_g);
   exit(0);
 }
 
 int main(int argc, char **argv)
 {
+  int& server_sock = server_sock_g;
   Logger::get_instance()->init(nullptr, 10);
 
   targs_deal_args(argc, argv);
@@ -77,26 +79,43 @@ int main(int argc, char **argv)
   server_sock = startup(&port);
   if (server_sock != -1)
     PR_INFO("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
-                host, port, server_sock, thread_num);
+            host, port, server_sock, thread_num);
   else
     PR_ERROR("create socket faild!\r\n");
+  Epoll ep;
 
   setlocale(LC_ALL, "en_US.UTF-8");
 
   signal(SIGINT, exit_handle);
-  while (1)
-  {
-    int *client_sock_p = NULL;
-    client_sock_p = (int *)malloc(sizeof(int));
 
-    *client_sock_p =
+  ep.epoll_add(server_sock, EPOLLIN, [&hs_tp,server_sock]
+               {
+      struct sockaddr_in client_name;
+  socklen_t client_name_len = sizeof(client_name);
+      int *client_sock_p = NULL;
+      client_sock_p = (int *)malloc(sizeof(int));
+      *client_sock_p =
         accept(server_sock, (struct sockaddr *)&client_name, &client_name_len);
-    if (*client_sock_p == -1)
-    {
-      error_die("accept");
-    }
-    hs_tp.post_task(accept_request, client_sock_p);
-  }
+        if (*client_sock_p == -1)
+        {
+          error_die("accept");
+        }
+        hs_tp.post_task(accept_request,client_sock_p); });
+  ep.poll();
+
+  // while (1)
+  // {
+  //   int *client_sock_p = NULL;
+  //   client_sock_p = (int *)malloc(sizeof(int));
+
+  //   *client_sock_p =
+  //       accept(server_sock, (struct sockaddr *)&client_name, &client_name_len);
+  //   if (*client_sock_p == -1)
+  //   {
+  //     error_die("accept");
+  //   }
+  //   hs_tp.post_task(accept_request, client_sock_p);
+  // }
   close(server_sock);
   return 0;
 }

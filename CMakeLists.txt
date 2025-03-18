@@ -25,12 +25,15 @@ set(UTILS_SRC ./src/utils/utils.cpp
 set(LOGGER_SRC ./src/log/log.cpp
     ./src/log/pr.cpp
     )
+set(NET_SRC ./src/net/epoll.cpp
 
-set(TINYBLOG_SRC ./src/main.cpp  ./src/create_html.cpp ./src/thttpd.cpp ./cjson/cJSON.c ${UTILS_SRC} ${MOONRISE_SRC} ${LOGGER_SRC})
+)
+
+set(TINYBLOG_SRC ./src/main.cpp  ./src/create_html.cpp ./src/thttpd.cpp ./cjson/cJSON.c ${UTILS_SRC} ${MOONRISE_SRC} ${LOGGER_SRC} ${NET_SRC})
 
 set(OUTPUT_BIN tinyblog)
 
-include_directories(./moonrise/src ./moonrise/html ./cjson ./src ./src/utils ./src/threadpool ./src/log)
+include_directories(./moonrise/src ./moonrise/html ./cjson ./src ./src/utils ./src/threadpool ./src/log ./src/net)
 
 add_executable(${OUTPUT_BIN} ${TINYBLOG_SRC})
 
