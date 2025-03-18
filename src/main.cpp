@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   if (thread_num == 0)
     thread_num = 1;
 
-  ThreadPool hs_tp{thread_num};
+    Threadpool hs_tp{thread_num};
 
   struct sockaddr_in client_name;
   socklen_t client_name_len = sizeof(client_name);

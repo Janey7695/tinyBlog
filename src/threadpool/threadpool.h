@@ -20,18 +20,18 @@
 
 using namespace std;
 
-class ThreadPool
+class Threadpool
 {
 public:
     typedef function<void()> Task;
-    inline ThreadPool(unsigned short size = 4)
+    inline Threadpool(unsigned short size = 4)
     {
         assert(size <= THREADPOOL_MAX_NUM);
         tp_running = true;
         add_thread(size);
     }
 
-    inline ~ThreadPool()
+    inline ~Threadpool()
     {
         tp_running = false;
         tp_task_cv.notify_all();
