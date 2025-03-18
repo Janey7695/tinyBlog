@@ -1,7 +1,10 @@
-#include "thttpd.h"
-#include "./utils/utils.h"
-#include "create_html.h"
-#include "thttpd.h"
+extern "C" {
+  #include "thttpd.h"
+  #include "./utils/utils.h"
+  #include "create_html.h"
+}
+#include "log/log.h"
+
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <locale.h>
@@ -40,7 +43,7 @@ http_header_t *create_new_header_from_oneline(char *oneline){
 	}
 	pnewheader = TMALLOC(http_header_t, 1);
 	if (pnewheader == NULL) {
-		LOG_ERROR("malloc memory faild in %s",__func__)
+		PR_ERROR("malloc memory faild \r\n");
 		return NULL;
 	}
 	char *s1,*s2;
@@ -83,12 +86,12 @@ http_header_t *create_new_header_from_keyvalue(char *key,char *value){
 	char *p1=NULL,*p2=NULL;
 	int length = 0;
 	if (key == NULL || value == NULL) {
-		LOG_WARN("you pass a null key or value string point in %s",__func__)
+		LOG_WARN("you pass a null key or value string point in %s\r\n",__func__);
 		return NULL;
 	}
 	pnewheader = TMALLOC(http_header_t, 1);
 	if (pnewheader == NULL) {
-		LOG_ERROR("malloc memory faild in %s",__func__)
+		LOG_ERROR("malloc memory faild in %s\r\n",__func__);
 		return NULL;
 	}
 	length = strlen(key);
@@ -112,7 +115,7 @@ http_header_t *create_new_header_from_keyvalue(char *key,char *value){
 
 int append_header(http_headers_t *headers_rootnode,http_header_t *header_newnode){
 	if (headers_rootnode == NULL || header_newnode == NULL) {
-		LOG_WARN("you pass a null node in %s ",__func__)
+		LOG_WARN("you pass a null node in %s \r\n",__func__);
 		return 0;	
 	}
 	if (headers_rootnode->head == NULL && headers_rootnode->tail == NULL) {
@@ -151,7 +154,7 @@ http_message_t *parse_http_message(int sock) {
   http_message_t *phmsg = TMALLOC(http_message_t, 1);
 
   if (phmsg == NULL) {
-    LOG_ERROR("alloc memory faild in %s", __func__)
+    LOG_ERROR("alloc memory faild in %s", __func__);
     return NULL;
   }
   numberChars = get_line(sock, buf, sizeof(buf));
@@ -179,7 +182,7 @@ http_message_t *parse_http_message(int sock) {
 
   phmsg->request.headers = TMALLOC(http_headers_t, 1);
   if (phmsg->request.headers == NULL) {
-  	LOG_ERROR("alloc memory faild in %s",__func__)
+  	LOG_ERROR("alloc memory faild in %s",__func__);
 	return NULL;
   }
   phmsg->request.headers->headers_number = 0;
@@ -195,7 +198,7 @@ http_message_t *parse_http_message(int sock) {
   phmsg->response.charbuf = NULL;
   phmsg->response.headers = TMALLOC(http_headers_t, 1);
   if (phmsg->response.headers == NULL) {
-  	LOG_ERROR("alloc memory faild in %s",__func__)
+  	LOG_ERROR("alloc memory faild in %s",__func__);
 	return NULL;
   }
   phmsg->response.headers->headers_number = 0;
@@ -235,7 +238,7 @@ void create_http_response_statusline(http_message_t *phmsg,
 
 void set_http_response_body_charbuf(http_message_t *phmsg, const char *charbuf)
 {
-	phmsg->response.charbuf = charbuf;
+	// phmsg->response.charbuf = charbuf;
 }
 void set_http_response_body_file(http_message_t *phmsg, FILE *fp)
 {
@@ -269,7 +272,7 @@ void accept_request(void *arg) {
   client = *(int *)arg;
   http_message_t *phttp_message = parse_http_message(client);
   if (phttp_message == NULL) {
-    LOG_ERROR("couldn't parse http message .")
+    LOG_ERROR("couldn't parse http message .\r\n");
     return;
   }
   DEBUG_NORMAL("Method : %s", phttp_message->request.method);
@@ -283,7 +286,7 @@ void accept_request(void *arg) {
           get_configures_point()->items[CONFIGURE_MKDPATH], &length);
       DEBUG_WARN("size is %d", strlen(contentArticlesList))
       if (contentArticlesList == NULL) {
-        LOG_WARN("couldn't parse articles list,will return null text.")
+        LOG_WARN("couldn't parse articles list,will return null text.");
         not_found(client);
         close(client);
         free((int *)arg);
@@ -294,7 +297,7 @@ void accept_request(void *arg) {
         contentWrapped = wrap_with_html_heads(contentArticlesList, &length,
                                               PAGE_TYPE_LISTPAGE);
         if (contentWrapped == NULL) {
-          LOG_WARN("couldn't wrap link list html tags,will return null text.")
+          LOG_WARN("couldn't wrap link list html tags,will return null text.");
           // return 404 page
           free(contentArticlesList);
           not_found(client);
@@ -327,11 +330,11 @@ void accept_request(void *arg) {
       sprintf(filePath, "%s%s.md",
               get_configures_point()->items[CONFIGURE_MKDPATH],
               phttp_message->request.path + 9);
-      LOG_NORMAL("a user want to read file : %s", filePath)
+      LOG_INFO("a user want to read file : %s", filePath);
       contentMd = parse_md_to_htmlBytesStream(filePath, &length);
       len += length;
       if (contentMd == NULL) {
-        LOG_WARN("couldn't parse markdown file,will return null text.")
+        LOG_WARN("couldn't parse markdown file,will return null text.");
         not_found(client);
         close(client);
         free((int *)arg);
@@ -349,7 +352,7 @@ void accept_request(void *arg) {
         contentWrapped =
             wrap_with_html_heads(contentNavMd, &length, PAGE_TYPE_MARKDOWN);
         if (contentWrapped == NULL) {
-          LOG_WARN("couldn't wrap markdown html tags,will return null text.")
+          LOG_WARN("couldn't wrap markdown html tags,will return null text.");
           // return 404 page
           not_found(client);
           free(contentMd);
@@ -562,7 +565,7 @@ void http_send(int client,http_message_t *phmsg)
 	protocol = phmsg->response.protocol;
 	status_code = phmsg->response.status_code;
 	status_message = phmsg->response.status_message;
-	headers = phmsg->response.headers;
+	// headers = phmsg->response.headers;
 	int l1 = strlen(protocol) + strlen(status_code) + strlen(status_message) + strlen("\r\n") + 3;
 	statuslinebuf = TMALLOC(char, l1);
 	l1 = sprintf(statuslinebuf, "%s %s %s\r\n",protocol,status_code,status_message);
@@ -726,7 +729,7 @@ int startup(u_short *port) {
   // 如果调用 bind 后端口号仍然是0，则手动调用getsockname()获取端口号
   if (*port == 0) /* if dynamically allocating a port */
   {
-    int namelen = sizeof(name);
+    socklen_t namelen = sizeof(name);
     // getsockname()包含于<sys/socker.h>中，参读《TLPI》P1263
     // 调用getsockname()获取系统给 httpd 这个 socket 随机分配的端口号
     if (getsockname(httpd, (struct sockaddr *)&name, &namelen) == -1)

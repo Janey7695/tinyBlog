@@ -3,16 +3,17 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-extern "C" {
-  #include "./utils/utils.h"
-  #include "create_html.h"
-  #include "thttpd.h"
-  }
+extern "C"
+{
+#include "./utils/utils.h"
+#include "create_html.h"
+#include "thttpd.h"
+}
 #include <locale.h>
 #include <sys/wait.h>
-#include "./threadpool/threadpool.h"
+#include "threadpool/threadpool.h"
+#include "log/log.h"
 #include <iostream>
-
 
 configures *p_globalConfigure = NULL;
 static const char *host = "0.0.0.0";
@@ -36,31 +37,32 @@ static int thread_num = 1;
 #define TEXT_HTML "text/html"
 #define TEXT_CSS "text/css"
 
-
-
 /**********************************************************************/
 
 int server_sock = -1;
 
-void exit_handle(int) {
-  printf("exit..\r\n");
+void exit_handle(int)
+{
+  PR_INFO("exit .. \r\n");
   close(server_sock);
   exit(0);
 }
 
-void te(int i){
-  std::cout << "test" << i <<std::endl;
-}
+int main(int argc, char **argv)
+{
+  Logger::get_instance()->init(nullptr, 10);
 
-int main(int argc, char **argv) {
   targs_deal_args(argc, argv);
 
   p_globalConfigure = get_configures_point();
   port = atoi(p_globalConfigure->items[CONFIGURE_PORT]);
 
-  if (p_globalConfigure->items[CONFIGURE_THREADS][0] != 'd') {
+  if (p_globalConfigure->items[CONFIGURE_THREADS][0] != 'd')
+  {
     thread_num = atoi(p_globalConfigure->items[CONFIGURE_THREADS]);
-  } else {
+  }
+  else
+  {
     thread_num = 1;
   }
 
@@ -68,28 +70,32 @@ int main(int argc, char **argv) {
     thread_num = 1;
 
   ThreadPool hs_tp{thread_num};
-  
 
   struct sockaddr_in client_name;
   socklen_t client_name_len = sizeof(client_name);
 
   server_sock = startup(&port);
-  LOG_SUCCESS("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
-              host, port, server_sock, thread_num)
+  if (server_sock != -1)
+    PR_INFO("tinyhttpd listening on %s:%d, listenfd=%d, thread_num=%d\n",
+                host, port, server_sock, thread_num);
+  else
+    PR_ERROR("create socket faild!\r\n");
 
   setlocale(LC_ALL, "en_US.UTF-8");
 
   signal(SIGINT, exit_handle);
-  while (1) {
+  while (1)
+  {
     int *client_sock_p = NULL;
     client_sock_p = (int *)malloc(sizeof(int));
 
     *client_sock_p =
         accept(server_sock, (struct sockaddr *)&client_name, &client_name_len);
-    if (*client_sock_p == -1) {
+    if (*client_sock_p == -1)
+    {
       error_die("accept");
     }
-    hs_tp.post_task(accept_request,client_sock_p);
+    hs_tp.post_task(accept_request, client_sock_p);
   }
   close(server_sock);
   return 0;

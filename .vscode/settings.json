@@ -1,6 +1,10 @@
 {
     "files.associations": {
+        "*.cjson": "jsonc",
+        "*.wxss": "css",
+        "*.wxs": "javascript",
         "errno.h": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "log.h": "c"
     }
 }

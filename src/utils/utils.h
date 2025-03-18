@@ -16,7 +16,7 @@
 
 #include "tversion.h"
 
-#define DEBUG_LOG
+// #define DEBUG_LOG
 
 /*loglevel to print 
  *
@@ -26,42 +26,6 @@
  * 3 = only print Error level
  *
  * */
-#define LOGLEVEL_TO_PRINT 0 
-
-#define COLOR_RED_NUM 31
-#define COLOR_GREEN_NUM 32
-#define COLOR_YELLOW_NUM 33
-#define COLOR_NORMAL_NUM 0
-
-#define LOG_PLAIN(color, level, message, ...)                       \
-    {                                                               \
-        char tss[80] = "";                                          \
-        get_current_timestamp(tss);                                 \
-        printf("%s - \033[%dm [%s] \033[0m : ", tss, color, level); \
-        printf(message, ##__VA_ARGS__);                             \
-        printf("\r\n");                                             \
-    }
-#if LOGLEVEL_TO_PRINT == 0
-#define LOG_WARN(message, ...) LOG_PLAIN(COLOR_YELLOW_NUM, "warning", message, ##__VA_ARGS__)
-#define LOG_ERROR(message, ...) LOG_PLAIN(COLOR_RED_NUM, "error", message, ##__VA_ARGS__)
-#define LOG_NORMAL(message, ...) LOG_PLAIN(COLOR_NORMAL_NUM, "log", message, ##__VA_ARGS__)
-#define LOG_SUCCESS(message, ...) LOG_PLAIN(COLOR_GREEN_NUM, "ok", message, ##__VA_ARGS__)
-#elif  LOGLEVEL_TO_PRINT == 1
-#define LOG_WARN(message, ...) LOG_PLAIN(COLOR_YELLOW_NUM, "warning", message, ##__VA_ARGS__)
-#define LOG_ERROR(message, ...) LOG_PLAIN(COLOR_RED_NUM, "error", message, ##__VA_ARGS__)
-#define LOG_NORMAL(message, ...) 
-#define LOG_SUCCESS(message, ...) LOG_PLAIN(COLOR_GREEN_NUM, "ok", message, ##__VA_ARGS__)
-#elif LOGLEVEL_TO_PRINT == 2
-#define LOG_WARN(message, ...) LOG_PLAIN(COLOR_YELLOW_NUM, "warning", message, ##__VA_ARGS__)
-#define LOG_ERROR(message, ...) LOG_PLAIN(COLOR_RED_NUM, "error", message, ##__VA_ARGS__)
-#define LOG_NORMAL(message, ...) 
-#define LOG_SUCCESS(message, ...) 
-#else 
-#define LOG_WARN(message, ...) 
-#define LOG_ERROR(message, ...) LOG_PLAIN(COLOR_RED_NUM, "error", message, ##__VA_ARGS__)
-#define LOG_NORMAL(message, ...) 
-#define LOG_SUCCESS(message, ...) 
-#endif
 
 #ifdef DEBUG_LOG
 #define DEBUG_PLAIN(color, level, message, ...)                       \
@@ -117,8 +81,8 @@ typedef struct markdown_files
 mkd_files *init_mkdroot();
 int get_mkd_files_name(const char *dirpath, mkd_files *mkds);
 void free_mkds(mkd_files *mkdroot);
-char *remove_suffix(char *filename, int stringLength);
-char *get_suffix(char *filename);
+char *remove_suffix(const char *filename, int stringLength);
+char *get_suffix(const char *filename);
 int create_dir(const char *dirpath);
 configures *read_configure_json(const char *config_file_path);
 void print_configure(configures *configure);

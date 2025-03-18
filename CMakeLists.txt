@@ -16,17 +16,21 @@ set(MOONRISE_SRC ./moonrise/src/markdown.c
     ./moonrise/html/html_smartypants.c
     )
 
-set(UTILS_SRC ./src/utils/utils.c
+set(UTILS_SRC ./src/utils/utils.cpp
     ./src/utils/targs.c
-    ./src/utils/tconfigure.c
-    ./src/utils/tmkd.c
+    ./src/utils/tconfigure.cpp
+    ./src/utils/tmkd.cpp
     )
 
-set(TINYBLOG_SRC ./src/main.cpp  ./src/create_html.c ./src/thttpd.c ./cjson/cJSON.c ${UTILS_SRC} ${MOONRISE_SRC})
+set(LOGGER_SRC ./src/log/log.cpp
+    ./src/log/pr.cpp
+    )
+
+set(TINYBLOG_SRC ./src/main.cpp  ./src/create_html.cpp ./src/thttpd.cpp ./cjson/cJSON.c ${UTILS_SRC} ${MOONRISE_SRC} ${LOGGER_SRC})
 
 set(OUTPUT_BIN tinyblog)
 
-include_directories(./moonrise/src ./moonrise/html ./cjson ./src ./src/utils ./src/threadpool)
+include_directories(./moonrise/src ./moonrise/html ./cjson ./src ./src/utils ./src/threadpool ./src/log)
 
 add_executable(${OUTPUT_BIN} ${TINYBLOG_SRC})
 
