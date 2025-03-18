@@ -1,5 +1,7 @@
-#include "utils.h"
-
+extern "C"{
+    #include "utils.h"
+}
+#include "../log/log.h"
 /// @brief 初始化markdown_files 的根节点
 /// @return 返回mkd_files指针 若初始化失败则返回NULL
 mkd_files *init_mkdroot()
@@ -7,7 +9,7 @@ mkd_files *init_mkdroot()
     mkd_files *mkdroot = (mkd_files *)malloc(sizeof(struct markdown_files));
     if (mkdroot == NULL)
     {
-        LOG_ERROR("alloc mem faild in %s",__func__)
+        PR_ERROR("alloc mem faild ");
         exit(1);
     }
     mkdroot->head = NULL;
@@ -32,7 +34,7 @@ mkd_file *create_new_mkd_node(const char *dirpath, const char *filename, int fil
 
     if (newMkdNode == NULL)
     {
-        LOG_WARN("alloc mem faild in %s",__func__)
+        PR_WARN("alloc mem faild");
         return newMkdNode;
     }
 
@@ -53,7 +55,7 @@ mkd_file *create_new_mkd_node(const char *dirpath, const char *filename, int fil
     }
     else
     {
-        LOG_WARN("faild to open %s to get modified time.",filePath)
+        LOG_WARN("faild to open %s to get modified time.",filePath);
         // printf("open file to get time faild.\n");
         newMkdNode->modify_time = 0;
     }
@@ -94,7 +96,7 @@ int get_mkd_files_name(const char *dirpath, mkd_files *mkds)
 
     if ((dir = opendir(dirpath)) == NULL)
     {
-        LOG_WARN("target markdown file dir don't exist, try to create it.")
+        LOG_WARN("target markdown file dir don't exist, try to create it.");
         // printf("target markdown file dir don't exist\n try to create it.\n");
         if (create_dir(dirpath) != 0)
         {

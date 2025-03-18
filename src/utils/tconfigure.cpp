@@ -1,4 +1,7 @@
-#include "utils.h"
+extern "C"{
+    #include "utils.h"
+}
+#include "../log/log.h"
 configures globalConfigure;
 
 const char *configure_items[] = {
@@ -21,7 +24,8 @@ int get_configre_x(configures* configure,cJSON* configure_json,int whichConfigur
     cJSON* pj;
     pj = cJSON_GetObjectItemCaseSensitive(configure_json,configure_items[whichConfigure]);
     if(pj == NULL){
-        LOG_WARN("don't find configure %s in the json file.",configure_items[whichConfigure])
+        PR_ERROR("don't find configure %s in the json file.",configure_items[whichConfigure]);
+        //LOG_ERROR("don't find configure %s in the json file.",configure_items[whichConfigure]);
         return 1;
     }
     int string_length = 0;
@@ -31,7 +35,7 @@ int get_configre_x(configures* configure,cJSON* configure_json,int whichConfigur
     strcpy(temp,cJSON_GetStringValue(pj));
     configure->items[whichConfigure] = temp;
 
-    LOG_SUCCESS("read configure %s succeed.",configure_items[whichConfigure])
+    LOG_INFO("read configure %s succeed.",configure_items[whichConfigure]);
     return 0;
 }
 
@@ -58,7 +62,7 @@ configures *read_configure_json(const char *config_file_path)
     fp = fopen(config_file_path, "r");
     if (fp == NULL)
     {
-        LOG_ERROR("can't open configure file %s\n", config_file_path)
+        PR_ERROR("can't open configure file %s\n", config_file_path);
         perror("open configure file : ");
         exit(1);
     }
@@ -72,7 +76,7 @@ configures *read_configure_json(const char *config_file_path)
     fread(json_string, filesize, sizeof(char), fp);
     json_string[filesize] = '\0';
     fclose(fp);
-    LOG_NORMAL("read configure file : %s\n",json_string)
+    LOG_INFO("read configure file : %s\n",json_string);
 
     configures_json = cJSON_Parse(json_string);
     if (configures_json == NULL)
@@ -89,7 +93,7 @@ configures *read_configure_json(const char *config_file_path)
 
     init_configure(&globalConfigure);
     int total_get = get_configure(&globalConfigure,configures_json);
-    LOG_NORMAL("get %d of %d configures.",total_get,TOTAL_CONFIGURES)
+    LOG_INFO("get %d of %d configures.",total_get,TOTAL_CONFIGURES);
     pconfigures = &globalConfigure;
     cJSON_Delete(configures_json);
 
@@ -105,6 +109,6 @@ configures *get_configures_point(){
 void print_configure(configures *configure){
     int i = 0;
     for(i;i<TOTAL_CONFIGURES;i++){
-        LOG_NORMAL("%s : %s",configure_items[i],configure->items[i])
+        LOG_INFO("%s : %s",configure_items[i],configure->items[i]);
     }
 }

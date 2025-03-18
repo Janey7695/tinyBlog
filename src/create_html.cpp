@@ -1,5 +1,11 @@
-#include "create_html.h"
-#include "./utils/utils.h"
+
+extern "C" {
+    #include "./utils/utils.h"
+    #include "create_html.h"
+}
+
+#include "log/log.h"
+
 #include <locale.h>
 
 #define HTML_MD_BEGIN "<html><head><meta charset=\"UTF-8\">"
@@ -53,7 +59,7 @@ char *wrap_with_html_heads(char *content, int *Length, int pageType)
     }
     if (contentStyleTag == NULL)
     {
-        LOG_WARN("couldn't find specified theme")
+        LOG_WARN("couldn't find specified theme");
         len = sprintf(contentWithHtmlHeads, "%s%s%s", HTML_MD_BEGIN, content, HTML_MD_END);
     }
     else
@@ -139,12 +145,12 @@ char *parse_mdtoc_to_htmlBytesStream(const char *filepath, int *length){
     sd_markdown_render(ob, ib->data, ib->size, markdown);
     sd_markdown_free(markdown);
 
-    content = (char *)malloc(sizeof(char) * (strlen(ob->data) + 2));
+    content = (char *)malloc(sizeof(char) * (strlen((const char*)ob->data) + 2));
 
     if (content != NULL)
     {
         DEBUG_SUCCESS("alloc mem for markdown2html buffer succed.")
-        DEBUG_WARN("alloc %d bytes in %s",strlen(ob->data) + 2,__func__)
+        DEBUG_WARN("alloc %d bytes in %s",strlen((const char*)ob->data) + 2,__func__)
         // printf("alloc mem succ\n");
     }
     else
@@ -222,7 +228,7 @@ char *parse_md_to_htmlBytesStream(const char *filepath, int *length)
     sd_markdown_render(ob, ib->data, ib->size, markdown);
     sd_markdown_free(markdown);
 
-    content = (char *)malloc(sizeof(char) * (strlen(ob->data) + 2));
+    content = (char *)malloc(sizeof(char) * (strlen((const char*)ob->data) + 2));
 
     if (content != NULL)
     {

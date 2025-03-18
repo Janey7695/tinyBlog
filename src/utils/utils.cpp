@@ -1,13 +1,15 @@
-
-#include "utils.h"
+extern "C" {
+    #include "utils.h"
+}
 #include <stddef.h>
+#include "../log/log.h"
 
 
 /// @brief 移除文件名后缀
 /// @param filename 
 /// @param stringLength 
 /// @return 
-char *remove_suffix(char *filename, int stringLength)
+char *remove_suffix(const char *filename, int stringLength)
 {
     if (filename == NULL)
         return NULL;
@@ -24,7 +26,7 @@ char *remove_suffix(char *filename, int stringLength)
 }
 
 
-char *get_suffix(char *filename)
+char *get_suffix(const char *filename)
 {
 	if (filename == NULL) {
 		return NULL;
@@ -77,11 +79,11 @@ int create_dir(const char *dirpath)
     {
         if (mkdir(dirpath, 0755) == -1)
         {
-            LOG_ERROR("mkdir %s error!",dirpath)
+            LOG_ERROR("mkdir %s error!",dirpath);
             return -1;
         }
     }
-    LOG_SUCCESS("create new floder %s .",dirpath)
+    LOG_INFO("create new floder %s .",dirpath);
     return 0;
 }
 
